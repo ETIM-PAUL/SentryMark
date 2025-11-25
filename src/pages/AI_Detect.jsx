@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { Upload, Download, Eye, Shield, AlertCircle, CheckCircle, Loader2, Sparkles, Lock, Brain } from 'lucide-react';
+import { Upload, Download, Eye, Shield, AlertCircle, CheckCircle, Loader2, Sparkles, Lock, Brain, Zap } from 'lucide-react';
 
 export default function AIWatermarkAndDetect() {
   const [mode, setMode] = useState('embed');
@@ -298,7 +298,11 @@ Be thorough in your analysis. If you find patterns that suggest a watermark, des
               AI-Powered Watermarking
             </h1>
           </div>
-          <p className="text-purple-200 text-lg">Full AI implementation - Claude handles all watermarking operations</p>
+          <p className="text-purple-200 text-sm md:text-lg">AI strategy + Canvas processing = Real watermarks</p>
+          <div className="flex items-center justify-center gap-2 mt-2">
+            <Zap className="w-4 h-4 text-yellow-400" />
+            <span className="text-xs md:text-sm text-purple-300">AI-guided • Canvas-powered • Fully functional</span>
+          </div>
         </div>
 
         <div className="bg-slate-800/50 backdrop-blur-xl rounded-2xl shadow-2xl p-8 mb-6 border border-purple-500/20">
