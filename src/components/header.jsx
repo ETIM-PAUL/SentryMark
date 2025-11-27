@@ -8,7 +8,7 @@ const Header = () => {
 
   const tabs = [
     { href:'/', id: 'watermarking', label: 'AI Watermarking', icon: Upload },
-    { href:'/audio-detect', id: 'audio', label: 'Music/Audio Recognition', icon: Music },
+    { href:'/audio-detect', id: 'audio', label: 'IP Asset C2PA', icon: Music },
     { href:'/ip_monitoring', id: 'monitoring', label: 'Web & Social Media Monitoring', icon: Globe },
     { href:'/onchain-ip-history', id: 'blockchain', label: 'Blockchain Provenance', icon: Link },
     { href:'/dispute_management', id: 'dispute', label: 'Dispute Management', icon: Scale },
@@ -25,9 +25,9 @@ const Header = () => {
               return (
                 <NavLink
                   key={tab.id}
-                  onClick={() => {navigate(tab.href);setActiveTab(tab.id)}}
-                  className={`flex cursor-pointer items-center gap-2 px-6 py-4 text-sm font-medium whitespace-nowrap transition-all ${
-                    activeTab === tab.id
+                  to={tab.href}
+                  className={({ isActive, isPending }) => `flex cursor-pointer items-center gap-2 px-6 py-4 text-sm font-medium whitespace-nowrap transition-all ${
+                    isActive
                       ? 'text-purple-300 border-b-2 border-purple-400 bg-purple-900/20'
                       : 'text-slate-400 hover:text-purple-300 hover:bg-purple-900/10'
                   }`}
