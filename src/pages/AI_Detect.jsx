@@ -1,5 +1,12 @@
 import React, { useState, useRef } from 'react';
+import toast from 'react-hot-toast';
 import { Upload, Download, Eye, Shield, AlertCircle, CheckCircle, Loader2, Sparkles, Lock, Brain, Zap } from 'lucide-react';
+
+const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
+
+if (!apiKey) {
+  console.error('Missing VITE_OPENAI_KEY in environment variables');
+}
 
 export default function AIWatermarkAndDetect() {
   const [mode, setMode] = useState('embed');
@@ -12,10 +19,12 @@ export default function AIWatermarkAndDetect() {
   const [aiLog, setAiLog] = useState([]);
   const fileInputRef = useRef(null);
 
+
   const addLog = (message, type = 'info') => {
     setAiLog(prev => [...prev, { message, type, timestamp: new Date().toISOString() }]);
   };
 
+  
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -41,8 +50,12 @@ export default function AIWatermarkAndDetect() {
   };
 
   const embedWatermarkWithAI = async () => {
+    if (!watermarkText) {
+      toast.error('Please enter watermark text');
+      return;
+    }
     if (!image || !watermarkText) {
-      alert('Please upload an image and enter watermark text');
+      toast.error('Please upload an image and enter watermark text');
       return;
     }
 
@@ -57,14 +70,15 @@ export default function AIWatermarkAndDetect() {
       addLog('🤖 Sending to Claude AI for watermark embedding...', 'info');
       addLog('⚙️ AI is analyzing image and creating optimal watermark pattern...', 'info');
 
-      const response = await fetch("https://api.anthropic.com/v1/messages", {
+      const response = await fetch("/api/v1/chat/completions", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          'Authorization': `Bearer ${apiKey}`,
         },
         body: JSON.stringify({
-          model: "claude-sonnet-4-20250514",
-          max_tokens: 4096,
+          model: "gpt-3.5-turbo",
+          max_tokens: 500,
           messages: [
             { 
               role: "user", 
@@ -111,6 +125,7 @@ Note: Since I cannot actually modify image bytes, describe in detail how the wat
       });
 
       const data = await response.json();
+      console.log("data", data)
       const textContent = data.content.find(item => item.type === "text")?.text || "";
       
       addLog('📊 AI response received, parsing results...', 'info');
@@ -158,7 +173,7 @@ Note: Since I cannot actually modify image bytes, describe in detail how the wat
 
   const detectWatermarkWithAI = async () => {
     if (!image) {
-      alert('Please upload an image to detect watermark');
+      toast.error('Please upload an image to detect watermark');
       return;
     }
 
@@ -173,14 +188,14 @@ Note: Since I cannot actually modify image bytes, describe in detail how the wat
       addLog('🤖 Sending to Claude AI for watermark detection...', 'info');
       addLog('🔎 AI is analyzing image for hidden watermarks...', 'info');
 
-      const response = await fetch("https://api.anthropic.com/v1/messages", {
+      const response = await fetch("api/v1/chat/completions", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          model: "claude-sonnet-4-20250514",
-          max_tokens: 4096,
+          model: "gpt-3.5-turbo",
+          max_tokens: 500,
           messages: [
             { 
               role: "user", 
@@ -289,12 +304,12 @@ Be thorough in your analysis. If you find patterns that suggest a watermark, des
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 p-8">
+  <div className="min-h-screen bg-linear-to-br from-slate-900 via-purple-900 to-slate-900 p-8">
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-3 mb-4">
             <Brain className="w-12 h-12 text-purple-400 animate-pulse" />
-            <h1 className="text-5xl font-bold bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 bg-clip-text text-transparent">
+            <h1 className="text-5xl font-bold bg-linear-to-r from-purple-400 via-pink-400 to-blue-400 bg-clip-text text-transparent">
               AI-Powered Watermarking
             </h1>
           </div>
@@ -311,7 +326,7 @@ Be thorough in your analysis. If you find patterns that suggest a watermark, des
               onClick={() => setMode('embed')}
               className={`flex-1 py-3 px-6 rounded-lg font-semibold transition-all ${
                 mode === 'embed'
-                  ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg shadow-purple-500/50 scale-105'
+                  ? 'bg-linear-to-r from-purple-600 to-pink-600 text-white shadow-lg shadow-purple-500/50 scale-105'
                   : 'bg-slate-700/50 text-purple-200 hover:bg-slate-700'
               }`}
             >
@@ -322,7 +337,7 @@ Be thorough in your analysis. If you find patterns that suggest a watermark, des
               onClick={() => setMode('detect')}
               className={`flex-1 py-3 px-6 rounded-lg font-semibold transition-all ${
                 mode === 'detect'
-                  ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg shadow-purple-500/50 scale-105'
+                  ? 'bg-linear-to-r from-purple-600 to-pink-600 text-white shadow-lg shadow-purple-500/50 scale-105'
                   : 'bg-slate-700/50 text-purple-200 hover:bg-slate-700'
               }`}
             >
@@ -352,7 +367,7 @@ Be thorough in your analysis. If you find patterns that suggest a watermark, des
           {mode === 'embed' && (
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-purple-200 mb-2 flex items-center gap-2">
+                <label className="text-sm font-medium text-purple-200 mb-2 flex items-center gap-2">
                   <Sparkles className="w-4 h-4 text-purple-400" />
                   Watermark Text
                 </label>
@@ -378,7 +393,7 @@ Be thorough in your analysis. If you find patterns that suggest a watermark, des
               <button
                 onClick={embedWatermarkWithAI}
                 disabled={loading || !image}
-                className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-3 rounded-lg font-semibold hover:from-purple-700 hover:to-pink-700 transition-all disabled:from-slate-600 disabled:to-slate-600 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg shadow-purple-500/30"
+                className="w-full bg-linear-to-r from-purple-600 to-pink-600 text-white py-3 rounded-lg font-semibold hover:from-purple-700 hover:to-pink-700 transition-all disabled:from-slate-600 disabled:to-slate-600 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg shadow-purple-500/30"
               >
                 {loading ? (
                   <>
@@ -410,7 +425,7 @@ Be thorough in your analysis. If you find patterns that suggest a watermark, des
               <button
                 onClick={detectWatermarkWithAI}
                 disabled={loading || !image}
-                className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-3 rounded-lg font-semibold hover:from-purple-700 hover:to-pink-700 transition-all disabled:from-slate-600 disabled:to-slate-600 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg shadow-purple-500/30"
+                className="w-full bg-linear-to-r from-purple-600 to-pink-600 text-white py-3 rounded-lg font-semibold hover:from-purple-700 hover:to-pink-700 transition-all disabled:from-slate-600 disabled:to-slate-600 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg shadow-purple-500/30"
               >
                 {loading ? (
                   <>
@@ -471,7 +486,7 @@ Be thorough in your analysis. If you find patterns that suggest a watermark, des
               </div>
               
               <div className="space-y-4">
-                <div className="p-4 bg-gradient-to-r from-green-500/10 to-emerald-500/10 rounded-lg border border-green-500/30">
+                <div className="p-4 bg-linear-to-r from-green-500/10 to-emerald-500/10 rounded-lg border border-green-500/30">
                   <div className="flex items-start gap-3">
                     <CheckCircle className="w-5 h-5 text-green-400 mt-0.5" />
                     <div>
@@ -509,7 +524,7 @@ Be thorough in your analysis. If you find patterns that suggest a watermark, des
               
               {detectionResult.watermark_detected ? (
                 <div className="space-y-4">
-                  <div className="p-4 bg-gradient-to-r from-blue-500/10 to-indigo-500/10 rounded-lg border border-blue-500/30">
+                  <div className="p-4 bg-linear-to-r from-blue-500/10 to-indigo-500/10 rounded-lg border border-blue-500/30">
                     <div className="flex items-start gap-3">
                       <CheckCircle className="w-6 h-6 text-blue-400 mt-0.5" />
                       <div className="flex-1">
@@ -587,7 +602,7 @@ Be thorough in your analysis. If you find patterns that suggest a watermark, des
           </h3>
           
           <div className="grid md:grid-cols-2 gap-6 text-sm text-purple-200 mb-6">
-            <div className="p-4 bg-gradient-to-br from-purple-500/10 to-pink-500/10 rounded-lg border border-purple-500/20">
+            <div className="p-4 bg-linear-to-br from-purple-500/10 to-pink-500/10 rounded-lg border border-purple-500/20">
               <h4 className="font-semibold text-white mb-2 flex items-center gap-2">
                 <Upload className="w-4 h-4 text-purple-400" />
                 AI Embedding Process
@@ -602,7 +617,7 @@ Be thorough in your analysis. If you find patterns that suggest a watermark, des
               </ul>
             </div>
 
-            <div className="p-4 bg-gradient-to-br from-blue-500/10 to-indigo-500/10 rounded-lg border border-blue-500/20">
+            <div className="p-4 bg-linear-to-br from-blue-500/10 to-indigo-500/10 rounded-lg border border-blue-500/20">
               <h4 className="font-semibold text-white mb-2 flex items-center gap-2">
                 <Eye className="w-4 h-4 text-blue-400" />
                 AI Detection Process
@@ -618,7 +633,7 @@ Be thorough in your analysis. If you find patterns that suggest a watermark, des
             </div>
           </div>
 
-          <div className="p-4 bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/30 rounded-lg">
+          <div className="p-4 bg-linear-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/30 rounded-lg">
             <div className="flex items-start gap-3">
               <AlertCircle className="w-5 h-5 text-amber-400 mt-0.5" />
               <div className="text-sm">
