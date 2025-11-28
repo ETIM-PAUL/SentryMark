@@ -18,6 +18,8 @@ export async function fetchIPByIpId(ipId) {
     }
   `;
 
+  
   const result = await client.request(query, { ipId });
-  return result.ip_registereds;
+  const tokenOwner = "0x233"
+  return {"metadata":result.ipregistereds[0], tokenOwner};
 }

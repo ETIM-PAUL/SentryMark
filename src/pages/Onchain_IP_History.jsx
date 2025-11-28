@@ -26,8 +26,8 @@ const Onchain_IP_History = () => {
     try {
       const data2 = await fetchIPByIpId(assetId.toLowerCase());
       console.log("data", data2)
-      const data = await fetchIPAssetData(assetId.trim());
-      setAssetData(data);
+      // const data = await fetchIPAssetData(assetId.trim());
+      setAssetData({"metadata":data2.metadata, tokenOwner:data2.tokenOwner});
       setTipsPage(1);
       setRevenueClaimsPage(1);
       toast.success('IP Asset data loaded successfully!');
@@ -103,29 +103,29 @@ const Onchain_IP_History = () => {
             {/* Metadata and License Cards Row */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* Metadata Card */}
-              <MetadataCard metadata={assetData.metadata} />
+              <MetadataCard metadata={assetData.metadata} tokenOwner={assetData.tokenOwner} />
               
               {/* License Card */}
-              <LicenseCard license={assetData.license} />
+              {/* <LicenseCard license={assetData.license} /> */}
             </div>
 
             {/* Tips Table */}
-            <TipsTable 
+            {/* <TipsTable 
               tips={assetData.tips} 
               currentPage={tipsPage}
               setCurrentPage={setTipsPage}
               paginatedTips={paginateData(assetData.tips, tipsPage)}
               totalPages={totalPages(assetData.tips)}
-            />
+            /> */}
 
             {/* Revenue Claims Table */}
-            <RevenueClaimsTable 
+            {/* <RevenueClaimsTable 
               claims={assetData.revenueClaims}
               currentPage={revenueClaimsPage}
               setCurrentPage={setRevenueClaimsPage}
               paginatedClaims={paginateData(assetData.revenueClaims, revenueClaimsPage)}
               totalPages={totalPages(assetData.revenueClaims)}
-            />
+            /> */}
           </div>
         )}
 
@@ -143,21 +143,22 @@ const Onchain_IP_History = () => {
 };
 
 // Metadata Card Component
-const MetadataCard = ({ metadata }) => (
+const MetadataCard = ({ metadata, tokenOwner }) => (
   <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 border border-purple-500/20 shadow-lg hover:shadow-xl hover:border-purple-500/30 transition-all">
     <div className="flex items-center gap-2 mb-6">
       <FileText className="text-purple-400" size={24} />
       <h3 className="text-xl font-bold text-slate-200">Asset Metadata</h3>
     </div>
     <div className="space-y-4">
-      <InfoRow label="Asset ID" value={metadata.assetId} icon={<Hash size={16} />} />
-      <InfoRow label="Name" value={metadata.assetName} />
-      <InfoRow label="Type" value={metadata.assetType} />
-      <InfoRow label="Creator" value={metadata.creator} mono />
-      <InfoRow label="Created" value={metadata.creationDate} icon={<Calendar size={16} />} />
-      <InfoRow label="Description" value={metadata.description} fullWidth />
-      <InfoRow label="IPFS Hash" value={metadata.ipfsHash} mono />
-      <InfoRow label="Total Value" value={metadata.totalValue} icon={<TrendingUp size={16} />} highlight />
+      <InfoRow label="Asset ID" value={metadata.id.slice(0,5)} icon={<Hash size={16} />} />
+      <InfoRow label="Name" value={metadata.name} />
+      <InfoRow label="Uri" value={metadata.uri} />
+      <InfoRow label="Creator" value={tokenOwner} mono />
+      <InfoRow label="Registered" value={metadata.registrationDate} icon={<Calendar size={16} />} />
+      <InfoRow label="IP Id" value={metadata.ipId.slice(0,5)} />
+      <InfoRow label="Chain Id" value={metadata.chainId} mono />
+      <InfoRow label="Token Contract" value={metadata.tokenContract.slice(0,5)} icon={<TrendingUp size={16} />} highlight />
+      <InfoRow label="Token Id" value={metadata.tokenId} icon={<TrendingUp size={16} />} highlight />
     </div>
   </div>
 );
