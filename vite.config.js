@@ -8,4 +8,17 @@ export default defineConfig({
   css: {
     postcss: {},
   },
+  server: {
+    proxy: {
+      '/api': {
+        target: 'https://api.openai.com', // Replace with your backend server URL
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api/, ''),
+      },
+    },
+  },
 })
+
+
+
+
