@@ -78,7 +78,7 @@ const Onchain_IP_History = () => {
                 value={assetId}
                 onChange={(e) => setAssetId(e.target.value)}
                 onKeyDown={handleKeyPress}
-                placeholder="e.g., IP-001, IP-002, IP-003"
+                placeholder="e.g., 0x6258f25a2f284f9a28bf143dd7ac249f612f7022"
                 className="flex-1 bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-3 text-slate-200 placeholder-slate-500 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
               />
               <button
@@ -90,7 +90,7 @@ const Onchain_IP_History = () => {
                 {isLoading ? 'Fetching...' : 'Fetch'}
               </button>
             </div>
-            <p className="text-slate-500 text-sm mt-3">Try: IP-001, IP-002, or IP-003</p>
+            <p className="text-slate-500 text-sm mt-3">Try: 0x6258f25a2f284f9a28bf143dd7ac249f612f7022, IP-002, or IP-003</p>
           </div>
         </div>
 
