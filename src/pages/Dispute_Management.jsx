@@ -1,15 +1,21 @@
-import { Scale, Search, AlertTriangle, CheckCircle, XCircle, Gavel, FileText, Clock, Shield, TrendingUp, X } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
+import { Scale, Search, AlertTriangle, CheckCircle, XCircle, Gavel, FileText, Clock, Shield, TrendingUp, X, File } from 'lucide-react';
+import React, { useEffect, useState, useRef } from 'react';
 import Header from '../components/header';
 import toast, { Toaster } from 'react-hot-toast';
 import { SkeletonCard, SkeletonLine } from '../components/SkeletonLoader';
-import { ethers } from "ethers";
+import { BrowserProvider, ethers, parseEther } from "ethers";
 import { disputeABI } from '../abi/dispute_abi';
-import { DisputeContract, RPC_URL } from '../utils';
+import { createStoryClientWithWallet, DisputeContract, RPC_URL, secondsFromNow, uploadFileToIPFS, uploadTextToIPFS } from '../utils';
+import { ConnectKitButton, ConnectKitProvider } from 'connectkit';
+import { http, useConnection } from 'wagmi';
+import { DisputeTargetTag, StoryClient } from '@story-protocol/core-sdk'
+import { storyAeneid } from 'viem/chains';
+
 
 const Dispute_Management = () => {
   const [disputeId, setDisputeId] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [disputeData, setDisputeData] = useState(null);
   const [totalDisputes, setTotalDisputes] = useState(0); 
   
@@ -18,6 +24,9 @@ const Dispute_Management = () => {
   const [showRaiseModal, setShowRaiseModal] = useState(false);
   const [showJudgementModal, setShowJudgementModal] = useState(false);
   const [showCancelModal, setShowCancelModal] = useState(false);
+  const evidenceInputRef = useRef(null);
+
+  const { address } = useConnection()
 
   // Resolve Modal Form
   const [resolveForm, setResolveForm] = useState({ disputeId: '', data: '' });
@@ -27,7 +36,11 @@ const Dispute_Management = () => {
     targetIpId: '',
     disputeEvidenceHash: '',
     targetTag: 'IMPROPER_REGISTRATION',
-    data: ''
+    bond: 0,
+    selectedEvidenceType: 'text',
+    evidenceText: '',
+    evidenceFile: '',
+    liveness: ''
   });
 
   // Judgement Modal Form
@@ -41,11 +54,13 @@ const Dispute_Management = () => {
   const [cancelForm, setCancelForm] = useState({ disputeId: '', data: '' });
 
   const targetTagOptions = [
-    { value: 'IMPROPER_REGISTRATION', label: 'Improper Registration' },
-    { value: 'PLAGIARISM', label: 'Plagiarism' },
-    { value: 'COPYRIGHT_VIOLATION', label: 'Copyright Violation' },
-    { value: 'UNAUTHORIZED_USE', label: 'Unauthorized Use' }
+    { value: DisputeTargetTag.IMPROPER_REGISTRATION, label: 'Improper Registration' },
+    { value: DisputeTargetTag.CONTENT_STANDARDS_VIOLATION, label: 'Content Standards Violation' },
+    { value: DisputeTargetTag.IMPROPER_USAGE, label: 'Improper Usage' },
+    { value: DisputeTargetTag.IMPROPER_PAYMENT, label: 'Improper Payment' },
+    { value: DisputeTargetTag.IN_DISPUTE, label: 'In Dispute' }
   ];
+
 
   const fetchDisputesCount = async() => {
   let provider = new ethers.JsonRpcProvider(RPC_URL)
@@ -55,7 +70,7 @@ const Dispute_Management = () => {
    setTotalDisputes(Number(res)));
   }
 
-  // Mock fetch dispute data
+  // fetch dispute data
   const handleFetchDispute = async () => {
     if (!disputeId.trim()) {
       toast.error('Please enter a Dispute ID');
@@ -65,16 +80,14 @@ const Dispute_Management = () => {
     setIsLoading(true);
     setDisputeData(null);
 
-    try {
       // Simulate API call
       let provider = new ethers.JsonRpcProvider(RPC_URL)
       const contract = new ethers.Contract(DisputeContract, disputeABI, provider)
 
       let formattedResponse;
 
-      contract.disputes(Number(disputeId)).then((res) => 
+      contract.disputes(Number(disputeId)).then(async(res) => 
         {
-          console.log(res)
         formattedResponse = {
          targetIpId: res[0],
          disputeInitiator: res[1],
@@ -86,22 +99,18 @@ const Dispute_Management = () => {
          infringerDisputeId: Number(res[7]),
          status: Number(res[7]) === 0 ? 'Pending' : 'Active'
        };
-      console.log(res)
+       setTimeout(() => {
+        console.log(formattedResponse)
+        if (formattedResponse.targetIpId === "0x0000000000000000000000000000000000000000") {
+          toast.error("No Dispute found with this ID");
+          return;
+        }
+  
+        setDisputeData(formattedResponse);
+        setIsLoading(false);
+        toast.success('Dispute data loaded successfully!');
+       }, 2000);
       })
-      await new Promise(resolve => setTimeout(resolve, 1500));
-
-      if (formattedResponse.targetIpId === "0x0000000000000000000000000000000000000000") {
-        toast.error("No Dispute found with this ID");
-        return;
-      }
-
-      setDisputeData(formattedResponse);
-      toast.success('Dispute data loaded successfully!');
-    } catch {
-      toast.error('Failed to fetch dispute data');
-    } finally {
-      setIsLoading(false);
-    }
   };
 
   const handleKeyPress = (e) => {
@@ -121,18 +130,44 @@ const Dispute_Management = () => {
     setResolveForm({ disputeId: '', data: '' });
   };
 
-  const handleRaiseDispute = () => {
-    if (!raiseForm.targetIpId || !raiseForm.disputeEvidenceHash || !raiseForm.data) {
+  const handleRaiseDispute = async () => {
+    try {
+    if (!raiseForm.targetIpId || !raiseForm.selectedEvidenceType || !raiseForm.liveness || !raiseForm.targetTag) {
       toast.error('Please fill all fields');
       return;
     }
-    toast.success('Dispute raised successfully!');
+    setIsSubmitting(true);
+    const { storyClient } = await createStoryClientWithWallet()
+
+    const disputeHash = raiseForm.selectedEvidenceType === "file" ? await uploadFileToIPFS(raiseForm.evidenceFile) : await uploadTextToIPFS(raiseForm.evidenceText)
+
+    // Raise a Dispute (8762)
+    const disputeResponse = await storyClient.dispute.raiseDispute({
+        targetIpId: raiseForm.targetIpId,
+        cid: disputeHash,
+        targetTag: raiseForm.targetTag,
+        bond: parseEther(!raiseForm.bond ? "0" : raiseForm.bond),
+        liveness: secondsFromNow(raiseForm.liveness),
+    })
+    console.log(`Dispute raised at transaction hash ${disputeResponse.txHash}, Dispute ID: ${disputeResponse.disputeId}`)
     setShowRaiseModal(false);
+    setIsSubmitting(false);
     setRaiseForm({ targetIpId: '', disputeEvidenceHash: '', targetTag: 'IMPROPER_REGISTRATION', data: '' });
     setTotalDisputes(prev => prev + 1);
+    toast.success(`Dispute raised successfully!`);
+    } catch (error) {
+      toast.error(error.message);
+      console.error(error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleSetJudgement = () => {
+    if (!address) {
+      toast.error('Please connect your wallet');
+      return;
+    }
     if (!judgementForm.disputeId || !judgementForm.data) {
       toast.error('Please fill all fields');
       return;
@@ -160,147 +195,177 @@ const Dispute_Management = () => {
     fetchDisputesCount();
   }, [])
   
+  const handleFileUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setRaiseForm({...raiseForm, evidenceFile:file});
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-slate-900 via-purple-900 to-slate-900">
-      <Header />
-      <Toaster position="top-right" />
-      
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header Section with Stats */}
-        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mb-12">
-          <div className="text-center lg:text-left">
-            <div className="flex items-center justify-center lg:justify-start gap-3 mb-4">
-              <Scale className="text-purple-400" size={48} />
-              <h1 className="text-4xl font-bold text-slate-200">Dispute Management</h1>
+    <ConnectKitProvider theme='midnight'>
+      <div className="min-h-screen bg-linear-to-br from-slate-900 via-purple-900 to-slate-900">
+        <Header />
+        <Toaster position="top-right" />
+        
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          {/* Header Section with Stats */}
+          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mb-12">
+            <div className="text-center lg:text-left">
+              <div className="flex items-center justify-center lg:justify-start gap-3 mb-4">
+                <Scale className="text-purple-400" size={48} />
+                <h1 className="text-4xl font-bold text-slate-200">Dispute Management</h1>
+              </div>
+              <p className="text-slate-400 text-lg">Manage and resolve IP disputes on the blockchain</p>
             </div>
-            <p className="text-slate-400 text-lg">Manage and resolve IP disputes on the blockchain</p>
+
+            {/* Total Disputes Counter */}
+            <div>
+              <div className="bg-linear-to-br from-purple-600/20 to-pink-600/20 backdrop-blur-sm rounded-2xl p-6 border border-purple-500/30 shadow-lg hover:shadow-purple-500/20 transition-all">
+                <div className="flex items-center gap-3">
+                  <div className="bg-purple-500/20 p-3 rounded-lg">
+                    <FileText className="text-purple-400" size={28} />
+                  </div>
+                  <div>
+                    <p className="text-slate-400 text-sm">Total Disputes</p>
+                    <p className="text-3xl font-bold text-purple-300">{totalDisputes}</p>
+                  </div>
+                </div>
+            </div>
+            </div>
           </div>
 
-          {/* Total Disputes Counter */}
-          <div className="bg-linear-to-br from-purple-600/20 to-pink-600/20 backdrop-blur-sm rounded-2xl p-6 border border-purple-500/30 shadow-lg hover:shadow-purple-500/20 transition-all">
-            <div className="flex items-center gap-3">
-              <div className="bg-purple-500/20 p-3 rounded-lg">
-                <FileText className="text-purple-400" size={28} />
+          {/* Search Section */}
+          <div className="max-w-4xl mx-auto mb-12">
+            <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 border border-purple-500/20 shadow-lg">
+              {/* Header with Label and Raise Button */}
+              <div className="flex items-center justify-between mb-6 gap-4">
+                <label className="flex items-center gap-2 text-slate-300 font-medium">
+                  <Search size={20} className="text-purple-400" />
+                  Search Dispute by ID
+                </label>
+
+                <div className='flex gap-2'>
+                  <button
+                    onClick={() => {address === undefined ? toast.error("Please connect your wallet") : setShowRaiseModal(true)}}
+                    className="cursor-pointer bg-linear-to-r from-yellow-600 to-yellow-500 hover:from-yellow-700 hover:to-yellow-600 text-white py-2.5 px-5 rounded-lg font-semibold transition-all shadow-lg hover:shadow-yellow-500/30 flex items-center gap-2 whitespace-nowrap"
+                  >
+                    <AlertTriangle size={18} />
+                    Raise Dispute
+                  </button>
+                  <ConnectKitButton/>
+                </div>
+                
               </div>
-              <div>
-                <p className="text-slate-400 text-sm">Total Disputes</p>
-                <p className="text-3xl font-bold text-purple-300">{totalDisputes}</p>
+
+              <div className="flex gap-3">
+                <input
+                  type="text"
+                  value={disputeId}
+                  onChange={(e) => setDisputeId(e.target.value)}
+                  onKeyDown={handleKeyPress}
+                  placeholder="e.g., 123 or 0x..."
+                  className="flex-1 bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-3 text-slate-200 placeholder-slate-500 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
+                />
+                <button
+                  onClick={handleFetchDispute}
+                  disabled={isLoading || !disputeId.trim()}
+                  className="bg-linear-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 disabled:from-slate-600 disabled:to-slate-700 text-white px-8 py-3 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 shadow-lg hover:shadow-purple-500/20 disabled:cursor-not-allowed"
+                >
+                  <Search size={20} />
+                  {isLoading ? 'Fetching...' : 'Fetch'}
+                </button>
               </div>
+              <p className="text-slate-500 text-sm mt-3">Enter a dispute ID to view details</p>
             </div>
           </div>
-        </div>
 
-        {/* Search Section */}
-        <div className="max-w-4xl mx-auto mb-12">
-          <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 border border-purple-500/20 shadow-lg">
-            {/* Header with Label and Raise Button */}
-            <div className="flex items-center justify-between mb-6 gap-4">
-              <label className="flex items-center gap-2 text-slate-300 font-medium">
-                <Search size={20} className="text-purple-400" />
-                Search Dispute by ID
-              </label>
-              
-              <button
-                onClick={() => setShowRaiseModal(true)}
-                className="bg-linear-to-r from-yellow-600 to-yellow-500 hover:from-yellow-700 hover:to-yellow-600 text-white py-2.5 px-5 rounded-lg font-semibold transition-all shadow-lg hover:shadow-yellow-500/30 flex items-center gap-2 whitespace-nowrap"
-              >
-                <AlertTriangle size={18} />
-                Raise Dispute
-              </button>
-            </div>
+          {/* Loading State */}
+          {isLoading && <DisputeLoadingSkeleton />}
 
-            <div className="flex gap-3">
-              <input
-                type="text"
-                value={disputeId}
-                onChange={(e) => setDisputeId(e.target.value)}
-                onKeyDown={handleKeyPress}
-                placeholder="e.g., 123 or 0x..."
-                className="flex-1 bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-3 text-slate-200 placeholder-slate-500 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
+          {/* Dispute Data Display */}
+          {!isLoading && disputeData && (
+            <div className="space-y-6 animate-fadeIn">
+              <DisputeCard 
+                disputeData={disputeData} 
+                formatDate={formatDate}
+                onResolve={() => {
+                  if (address === undefined) {
+                    toast.error("Please connect your wallet");
+                    return;
+                  }
+                  setResolveForm({ ...resolveForm, disputeId: disputeId });
+                  setShowResolveModal(true);
+                }}
+                onSetJudgement={() => {
+                  if (address === undefined) {
+                    toast.error("Please connect your wallet");
+                    return;
+                  }
+                  setJudgementForm({ ...judgementForm, disputeId: disputeId });
+                  setShowJudgementModal(true);
+                }}
+                onCancel={() => {
+                  if (address === undefined) {
+                    toast.error("Please connect your wallet");
+                    return;
+                  }
+                  setCancelForm({ ...cancelForm, disputeId: disputeId });
+                  setShowCancelModal(true);
+                }}
               />
-              <button
-                onClick={handleFetchDispute}
-                disabled={isLoading || !disputeId.trim()}
-                className="bg-linear-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 disabled:from-slate-600 disabled:to-slate-700 text-white px-8 py-3 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 shadow-lg hover:shadow-purple-500/20 disabled:cursor-not-allowed"
-              >
-                <Search size={20} />
-                {isLoading ? 'Fetching...' : 'Fetch'}
-              </button>
             </div>
-            <p className="text-slate-500 text-sm mt-3">Enter a dispute ID to view details</p>
-          </div>
+          )}
+
+          {/* Empty State */}
+          {!isLoading && !disputeData && (
+            <div className="text-center py-20">
+              <Scale className="mx-auto mb-4 text-purple-400/50" size={64} />
+              <h2 className="text-2xl font-bold text-slate-300 mb-2">No Dispute Selected</h2>
+              <p className="text-slate-500">Enter a Dispute ID above to view its details</p>
+            </div>
+          )}
         </div>
 
-        {/* Loading State */}
-        {isLoading && <DisputeLoadingSkeleton />}
+        {/* Modals */}
+        <ResolveDisputeModal 
+          show={showResolveModal}
+          onClose={() => setShowResolveModal(false)}
+          form={resolveForm}
+          setForm={setResolveForm}
+          onSubmit={handleResolveDispute}
+        />
 
-        {/* Dispute Data Display */}
-        {!isLoading && disputeData && (
-          <div className="space-y-6 animate-fadeIn">
-            <DisputeCard 
-              disputeData={disputeData} 
-              formatDate={formatDate}
-              onResolve={() => {
-                setResolveForm({ ...resolveForm, disputeId: disputeId });
-                setShowResolveModal(true);
-              }}
-              onSetJudgement={() => {
-                setJudgementForm({ ...judgementForm, disputeId: disputeId });
-                setShowJudgementModal(true);
-              }}
-              onCancel={() => {
-                setCancelForm({ ...cancelForm, disputeId: disputeId });
-                setShowCancelModal(true);
-              }}
-            />
-          </div>
-        )}
+        <RaiseDisputeModal 
+          show={showRaiseModal}
+          isSubmitting={isSubmitting}
+          onClose={() => setShowRaiseModal(false)}
+          form={raiseForm}
+          setForm={setRaiseForm}
+          onSubmit={handleRaiseDispute}
+          targetTagOptions={targetTagOptions}
+          evidenceInputRef={evidenceInputRef}
+          handleFileUpload={handleFileUpload}
 
-        {/* Empty State */}
-        {!isLoading && !disputeData && (
-          <div className="text-center py-20">
-            <Scale className="mx-auto mb-4 text-purple-400/50" size={64} />
-            <h2 className="text-2xl font-bold text-slate-300 mb-2">No Dispute Selected</h2>
-            <p className="text-slate-500">Enter a Dispute ID above to view its details</p>
-          </div>
-        )}
+        />
+
+        <SetJudgementModal 
+          show={showJudgementModal}
+          onClose={() => setShowJudgementModal(false)}
+          form={judgementForm}
+          setForm={setJudgementForm}
+          onSubmit={handleSetJudgement}
+        />
+
+        <CancelDisputeModal 
+          show={showCancelModal}
+          onClose={() => setShowCancelModal(false)}
+          form={cancelForm}
+          setForm={setCancelForm}
+          onSubmit={handleCancelDispute}
+        />
       </div>
-
-      {/* Modals */}
-      <ResolveDisputeModal 
-        show={showResolveModal}
-        onClose={() => setShowResolveModal(false)}
-        form={resolveForm}
-        setForm={setResolveForm}
-        onSubmit={handleResolveDispute}
-      />
-
-      <RaiseDisputeModal 
-        show={showRaiseModal}
-        onClose={() => setShowRaiseModal(false)}
-        form={raiseForm}
-        setForm={setRaiseForm}
-        onSubmit={handleRaiseDispute}
-        targetTagOptions={targetTagOptions}
-      />
-
-      <SetJudgementModal 
-        show={showJudgementModal}
-        onClose={() => setShowJudgementModal(false)}
-        form={judgementForm}
-        setForm={setJudgementForm}
-        onSubmit={handleSetJudgement}
-      />
-
-      <CancelDisputeModal 
-        show={showCancelModal}
-        onClose={() => setShowCancelModal(false)}
-        form={cancelForm}
-        setForm={setCancelForm}
-        onSubmit={handleCancelDispute}
-      />
-    </div>
+    </ConnectKitProvider>
   );
 };
 
@@ -588,11 +653,12 @@ const ResolveDisputeModal = ({ show, onClose, form, setForm, onSubmit }) => (
   </Modal>
 );
 
-const RaiseDisputeModal = ({ show, onClose, form, setForm, onSubmit, targetTagOptions }) => (
+const RaiseDisputeModal = ({ show, onClose, form, setForm, isSubmitting, onSubmit, targetTagOptions, evidenceInputRef, handleFileUpload }) => (
   <Modal show={show} onClose={onClose} title="Raise New Dispute" icon={AlertTriangle}>
     <div className="space-y-4">
       <div>
-        <label className="block text-slate-300 font-medium mb-2">Target IP ID</label>
+        <label className="block text-slate-300 font-medium">Target IP ID</label>
+        <span className='text-red-500 text-xs'>The IP ID that is the target of the dispute</span>
         <input
           type="text"
           value={form.targetIpId}
@@ -602,17 +668,8 @@ const RaiseDisputeModal = ({ show, onClose, form, setForm, onSubmit, targetTagOp
         />
       </div>
       <div>
-        <label className="block text-slate-300 font-medium mb-2">Evidence Hash</label>
-        <input
-          type="text"
-          value={form.disputeEvidenceHash}
-          onChange={(e) => setForm({ ...form, disputeEvidenceHash: e.target.value })}
-          placeholder="0x..."
-          className="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-3 text-slate-200 placeholder-slate-500 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 font-mono"
-        />
-      </div>
-      <div>
-        <label className="block text-slate-300 font-medium mb-2">Target Tag</label>
+        <label className="block text-slate-300 font-medium">Tag</label>
+        <span className='text-red-500 text-xs'>The target tag of the dispute</span>
         <select
           value={form.targetTag}
           onChange={(e) => setForm({ ...form, targetTag: e.target.value })}
@@ -626,20 +683,98 @@ const RaiseDisputeModal = ({ show, onClose, form, setForm, onSubmit, targetTagOp
         </select>
       </div>
       <div>
-        <label className="block text-slate-300 font-medium mb-2">Data (bytes)</label>
-        <textarea
-          value={form.data}
-          onChange={(e) => setForm({ ...form, data: e.target.value })}
-          placeholder="0x..."
-          rows={4}
-          className="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-3 text-slate-200 placeholder-slate-500 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 font-mono text-sm"
+        <label className="block text-slate-300 font-medium ">Bond (Optional)</label>
+        <span className='text-red-500 text-xs'>The amount of wrapper IP that the dispute initiator pays upfront into a pool. To counter that dispute the opposite party of the dispute has to place a bond of the same amount. The winner of the dispute gets the original bond back + 50% of the other party bond. The remaining 50% of the loser party bond goes to the reviewer.</span>
+        <input
+          type="text"
+          value={form.bond}
+          onChange={(e) => setForm({ ...form, bond: e.target.value })}
+          placeholder="Amount of IP Token to bond your dispute"
+          className="w-full mt-1 bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-3 text-slate-200 placeholder-slate-500 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 font-mono"
         />
       </div>
+
+      <div>
+        <label className="block text-slate-300 font-medium">Evidence Type</label>
+        <span className='text-red-500 text-xs'>Select type for uploading your dispute evidence (documents, images, etc.)</span>
+        <select
+          value={form.selectedEvidenceType}
+          defaultValue="text"
+          onChange={(e) => setForm({ ...form, selectedEvidenceType: e.target.value })}
+          className="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-3 text-slate-200 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20"
+        >
+            <option  value="select" disabled>
+              --Please select type--
+            </option>
+            <option value="file">
+              File (Image, Audio, Document, Video)
+            </option>
+            <option value="text">
+              Text (Written Text)
+            </option>
+        </select>
+      </div>
+
+      {form.selectedEvidenceType === "file"  &&
+      <div>
+          <input
+          ref={evidenceInputRef}
+          type="file"
+          accept="*"
+          onChange={handleFileUpload}
+          className="hidden"
+          />
+        <div
+          onClick={() => evidenceInputRef.current?.click()}
+          className="border-2 border-dashed border-purple-700/50 rounded-xl p-16 mb-6 text-center hover:border-purple-600/70 transition-colors cursor-pointer"
+          >
+          {form.evidenceFile ? (
+            <div className="space-y-4">
+              <File className="w-12 h-12 text-green-400 mx-auto" />
+              <p className="text-purple-200 text-lg">{form.evidenceFile.name.slice(0,5)+ (" ")+ form.evidenceFile.name.slice(80,form.evidenceFile.name.length-1)}</p>
+              <p className="text-purple-400 text-sm">Click to change file</p>
+            </div>
+          ) : (
+            <>
+              <File className="w-12 h-12 text-purple-400 mx-auto mb-4" />
+              <p className="text-purple-200 text-lg mb-2">Click to upload evidence file</p>
+              <p className="text-purple-400 text-sm">documents, images, videos, etc.</p>
+            </>
+          )}
+        </div>
+      </div>
+      }
+      {form.selectedEvidenceType === "text"  &&
+      <div>
+        <label className="block text-slate-300 font-medium">Text Evidence</label>
+        <textarea
+          type="text"
+          value={form.evidenceText}
+          onChange={(e) => setForm({ ...form, evidenceText: e.target.value })}
+          placeholder="Fill out your evidence here."
+          className="w-full mt-1 bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-3 text-slate-200 placeholder-slate-500 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 font-mono"
+        />
+      </div>
+      }
+
+      <div>
+        <label className="block text-slate-300 font-medium ">Liveness</label>
+        <span className='text-red-500 text-xs'>The liveness is the time window (in seconds) in which a counter dispute can be presented.</span>
+        <input
+          type="datetime-local"
+          value={form.liveness}
+          onChange={(e) => setForm({ ...form, liveness: e.target.value })}
+          placeholder=""
+          className="w-full mt-1 bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-3 text-slate-200 placeholder-slate-500 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 font-mono"
+        />
+      </div>
+
       <button
         onClick={onSubmit}
-        className="w-full bg-linear-to-r from-yellow-600 to-yellow-500 hover:from-yellow-700 hover:to-yellow-600 text-white py-3 rounded-lg font-semibold transition-all shadow-lg"
+        disabled={isSubmitting}
+        className="w-full disabled:opacity-50 disabled:cursor-not-allowed bg-linear-to-r from-yellow-600 to-yellow-500 hover:from-yellow-700 hover:to-yellow-600 text-white py-3 rounded-lg font-semibold transition-all shadow-lg"
       >
-        Raise Dispute
+        {isSubmitting ? 'Processing...' : 'Raise Dispute'}
       </button>
     </div>
   </Modal>
