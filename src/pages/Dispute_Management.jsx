@@ -1,14 +1,17 @@
 import { Scale, Search, AlertTriangle, CheckCircle, XCircle, Gavel, FileText, Clock, Shield, TrendingUp, X } from 'lucide-react';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Header from '../components/header';
 import toast, { Toaster } from 'react-hot-toast';
 import { SkeletonCard, SkeletonLine } from '../components/SkeletonLoader';
+import { ethers } from "ethers";
+import { disputeABI } from '../abi/dispute_abi';
+import { DisputeContract, RPC_URL } from '../utils';
 
 const Dispute_Management = () => {
   const [disputeId, setDisputeId] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [disputeData, setDisputeData] = useState(null);
-  const [totalDisputes, setTotalDisputes] = useState(127); // Mock total disputes
+  const [totalDisputes, setTotalDisputes] = useState(0); 
   
   // Modal states
   const [showResolveModal, setShowResolveModal] = useState(false);
@@ -44,6 +47,14 @@ const Dispute_Management = () => {
     { value: 'UNAUTHORIZED_USE', label: 'Unauthorized Use' }
   ];
 
+  const fetchDisputesCount = async() => {
+  let provider = new ethers.JsonRpcProvider(RPC_URL)
+   const contract = new ethers.Contract(DisputeContract, disputeABI, provider)
+
+   contract.disputeCounter().then((res) => 
+   setTotalDisputes(Number(res)));
+  }
+
   // Mock fetch dispute data
   const handleFetchDispute = async () => {
     if (!disputeId.trim()) {
@@ -56,21 +67,34 @@ const Dispute_Management = () => {
 
     try {
       // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // Mock data
-      const mockData = {
-        targetIpId: '0xA85e570C61d806a2Bf1bAdB05945A2cC24e85F78',
-        disputeInitiator: '0xeAacc52d4F18aEd2377DA4eD70770F2ba22D56Df',
-        disputeTimestamp: 1737604273,
-        arbitrationPolicy: '0xfFD98c3877B8789124f02C7E8239A4b0Ef11E936',
-        disputeEvidenceHash: '0xb7b94ecbd1f9f8cb209909e5785fb2858c9a8c4b220c017995a75346ad1b5db5',
-        targetTag: '0x494d50524f5045525f524547495354524154494f4e0000000000000000000000',
-        currentTag: '0x0000000000000000000000000000000000000000000000000000000000000000',
-        status: 'Pending'
-      };
+      let provider = new ethers.JsonRpcProvider(RPC_URL)
+      const contract = new ethers.Contract(DisputeContract, disputeABI, provider)
 
-      setDisputeData(mockData);
+      let formattedResponse;
+
+      contract.disputes(Number(disputeId)).then((res) => 
+        {
+        formattedResponse = {
+         targetIpId: res[0],
+         disputeInitiator: res[1],
+         disputeTimestamp: Number(res[2]),
+         arbitrationPolicy: res[3],
+         disputeEvidenceHash: res[4],
+         targetTag: res[5],
+         currentTag: res[6],
+         infringerDisputeId: Number(res[7]),
+         status: 'Pending'
+       };
+      console.log(res)
+      })
+      await new Promise(resolve => setTimeout(resolve, 1500));
+
+      if (formattedResponse.targetIpId === "0x0000000000000000000000000000000000000000") {
+        toast.error("No Dispute found with this ID");
+        return;
+      }
+
+      setDisputeData(formattedResponse);
       toast.success('Dispute data loaded successfully!');
     } catch {
       toast.error('Failed to fetch dispute data');
@@ -130,6 +154,11 @@ const Dispute_Management = () => {
   const formatDate = (timestamp) => {
     return new Date(timestamp * 1000).toLocaleString();
   };
+
+  useEffect(() => {
+    fetchDisputesCount();
+  }, [])
+  
 
   return (
     <div className="min-h-screen bg-linear-to-br from-slate-900 via-purple-900 to-slate-900">
