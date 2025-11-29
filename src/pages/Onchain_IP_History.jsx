@@ -5,6 +5,7 @@ import { IPAssetLoadingSkeleton } from '../components/SkeletonLoader';
 import { fetchIPAssetData } from '../utils/mockData';
 import toast, { Toaster } from 'react-hot-toast';
 import { fetchIPByIpId } from '../queries';
+import { formatDate } from '../utils';
 
 const Onchain_IP_History = () => {
   const [assetId, setAssetId] = useState('');
@@ -25,9 +26,13 @@ const Onchain_IP_History = () => {
 
     try {
       const data2 = await fetchIPByIpId(assetId.toLowerCase());
-      console.log("data", data2)
+      if (data2.metadata === undefined) {
+        toast.error("No IP Asset found with this address");
+        return;
+      }
       // const data = await fetchIPAssetData(assetId.trim());
-      setAssetData({"metadata":data2.metadata, tokenOwner:data2.tokenOwner});
+      setAssetData({"metadata":data2.metadata, "tokenOwner":data2.tokenOwner, "isIPDisputed":data2.isIPDisputed});
+      console.log("data", data2)
       setTipsPage(1);
       setRevenueClaimsPage(1);
       toast.success('IP Asset data loaded successfully!');
@@ -103,7 +108,7 @@ const Onchain_IP_History = () => {
             {/* Metadata and License Cards Row */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* Metadata Card */}
-              <MetadataCard metadata={assetData.metadata} tokenOwner={assetData.tokenOwner} />
+              <MetadataCard metadata={assetData.metadata} tokenOwner={assetData.tokenOwner} isIPDisputed={assetData.isIPDisputed}  />
               
               {/* License Card */}
               {/* <LicenseCard license={assetData.license} /> */}
@@ -143,18 +148,25 @@ const Onchain_IP_History = () => {
 };
 
 // Metadata Card Component
-const MetadataCard = ({ metadata, tokenOwner }) => (
+const MetadataCard = ({ metadata, tokenOwner, isIPDisputed }) => (
   <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 border border-purple-500/20 shadow-lg hover:shadow-xl hover:border-purple-500/30 transition-all">
-    <div className="flex items-center gap-2 mb-6">
+    <div className="flex justify-between items-center gap-2 mb-6">
+      <div className='flex gap-2'>
       <FileText className="text-purple-400" size={24} />
       <h3 className="text-xl font-bold text-slate-200">Asset Metadata</h3>
+      </div>
+      {isIPDisputed &&
+      <span className={`px-4 py-2 rounded-full text-sm font-semibold border bg-red-500/20 text-red-400 border-red-500/30`}>
+      Disputed
+    </span>
+    }
     </div>
     <div className="space-y-4">
       <InfoRow label="Asset ID" value={metadata.id.slice(0,5)} icon={<Hash size={16} />} />
-      <InfoRow label="Name" value={metadata.name} />
-      <InfoRow label="Uri" value={metadata.uri} />
+      <InfoRow label="Name" value={metadata.name ?? "N/A"} />
+      <InfoRow label="Uri" value={metadata.uri ?? "N/A"} />
       <InfoRow label="Creator" value={tokenOwner} mono />
-      <InfoRow label="Registered" value={metadata.registrationDate} icon={<Calendar size={16} />} />
+      <InfoRow label="Registered" value={formatDate(metadata.registrationDate) ?? "N/A"} icon={<Calendar size={16} />} />
       <InfoRow label="IP Id" value={metadata.ipId.slice(0,5)} />
       <InfoRow label="Chain Id" value={metadata.chainId} mono />
       <InfoRow label="Token Contract" value={metadata.tokenContract.slice(0,5)} icon={<TrendingUp size={16} />} highlight />

@@ -74,6 +74,7 @@ const Dispute_Management = () => {
 
       contract.disputes(Number(disputeId)).then((res) => 
         {
+          console.log(res)
         formattedResponse = {
          targetIpId: res[0],
          disputeInitiator: res[1],
@@ -83,7 +84,7 @@ const Dispute_Management = () => {
          targetTag: res[5],
          currentTag: res[6],
          infringerDisputeId: Number(res[7]),
-         status: 'Pending'
+         status: Number(res[7]) === 0 ? 'Pending' : 'Active'
        };
       console.log(res)
       })
@@ -427,7 +428,7 @@ const DisputeCard = ({ disputeData, formatDate, onResolve, onSetJudgement, onCan
 const StatusBadge = ({ status }) => {
   const colors = {
     Pending: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
-    Resolved: 'bg-green-500/20 text-green-400 border-green-500/30',
+    Active: 'bg-green-500/20 text-green-400 border-green-500/30',
     Cancelled: 'bg-red-500/20 text-red-400 border-red-500/30',
     'In Progress': 'bg-blue-500/20 text-blue-400 border-blue-500/30'
   };
@@ -561,9 +562,10 @@ const ResolveDisputeModal = ({ show, onClose, form, setForm, onSubmit }) => (
         <input
           type="text"
           value={form.disputeId}
+          disabled={true}
           onChange={(e) => setForm({ ...form, disputeId: e.target.value })}
           placeholder="Enter dispute ID"
-          className="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-3 text-slate-200 placeholder-slate-500 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20"
+          className="w-full disabled:cursor-not-allowed bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-3 text-slate-200 placeholder-slate-500 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20"
         />
       </div>
       <div>
@@ -651,9 +653,10 @@ const SetJudgementModal = ({ show, onClose, form, setForm, onSubmit }) => (
         <input
           type="text"
           value={form.disputeId}
+          disabled={true}
           onChange={(e) => setForm({ ...form, disputeId: e.target.value })}
           placeholder="Enter dispute ID"
-          className="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-3 text-slate-200 placeholder-slate-500 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20"
+          className="w-full disabled:cursor-not-allowed bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-3 text-slate-200 placeholder-slate-500 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20"
         />
       </div>
       <div>
@@ -716,9 +719,10 @@ const CancelDisputeModal = ({ show, onClose, form, setForm, onSubmit }) => (
         <input
           type="text"
           value={form.disputeId}
+          disabled={true}
           onChange={(e) => setForm({ ...form, disputeId: e.target.value })}
           placeholder="Enter dispute ID"
-          className="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-3 text-slate-200 placeholder-slate-500 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20"
+          className="w-full disabled:cursor-not-allowed bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-3 text-slate-200 placeholder-slate-500 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20"
         />
       </div>
       <div>
