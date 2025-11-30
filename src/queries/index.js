@@ -27,11 +27,16 @@ export async function fetchIPByIpId(ipId) {
   let isIPDisputed;
 
   let provider = new ethers.JsonRpcProvider(RPC_URL)
+  console.log("provider:", provider)
   const contract = new ethers.Contract(DisputeContract, disputeABI, provider)
 
   const res = await contract.isIpTagged(ipId)
   
   isIPDisputed = res;
+
+  console.log("tokenOwner:", tokenOwner)
+  console.log("metadata:", result.ipregistereds[0])
+  
 
 
   return {"metadata":result.ipregistereds[0], tokenOwner, isIPDisputed};
