@@ -5,7 +5,7 @@ import toast, { Toaster } from 'react-hot-toast';
 import { SkeletonCard, SkeletonLine } from '../components/SkeletonLoader';
 import { BrowserProvider, ethers, parseEther } from "ethers";
 import { disputeABI } from '../abi/dispute_abi';
-import { createStoryClientWithWallet, DisputeContract, RPC_URL, secondsFromNow, uploadFileToIPFS, uploadTextToIPFS } from '../utils';
+import { createStoryClientWithWallet, DisputeContract, formatDate, RPC_URL, secondsFromNow, uploadFileToIPFS, uploadTextToIPFS } from '../utils';
 import { ConnectKitButton, ConnectKitProvider } from 'connectkit';
 import { http, useConnection } from 'wagmi';
 import { DisputeTargetTag, StoryClient } from '@story-protocol/core-sdk'
@@ -80,7 +80,6 @@ const Dispute_Management = () => {
     setIsLoading(true);
     setDisputeData(null);
 
-      // Simulate API call
       let provider = new ethers.JsonRpcProvider(RPC_URL)
       const contract = new ethers.Contract(DisputeContract, disputeABI, provider)
 
@@ -163,7 +162,7 @@ const Dispute_Management = () => {
     }
   };
 
-  const handleSetJudgement = () => {
+  const handleSetJudgement = async () => {
     if (!address) {
       toast.error('Please connect your wallet');
       return;
@@ -172,24 +171,46 @@ const Dispute_Management = () => {
       toast.error('Please fill all fields');
       return;
     }
-    toast.success(`Judgement set: ${judgementForm.decision ? 'Approved' : 'Rejected'}`);
-    setShowJudgementModal(false);
-    setJudgementForm({ disputeId: '', decision: true, data: '' });
+    
+    try {
+      setIsSubmitting(true);
+      let provider = new ethers.BrowserProvider(window.ethereum)
+      const signer = await provider.getSigner();
+      const contract = new ethers.Contract(DisputeContract, disputeABI, signer)
+
+      const tx = await contract.setDisputeJudgement(Number(judgementForm.disputeId), judgementForm.decision, "0x" + Buffer.from(judgementForm.data).toString("hex"))
+      await tx.wait()
+      toast.success(`Judgement set: ${judgementForm.decision ? 'Approved' : 'Rejected'}`);
+      setShowJudgementModal(false);
+      setJudgementForm({ disputeId: '', decision: true, data: '' });
+    } catch (error) {
+      toast.error(error.message);
+      console.error(error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
-  const handleCancelDispute = () => {
-    if (!cancelForm.disputeId || !cancelForm.data) {
-      toast.error('Please fill all fields');
-      return;
-    }
+  const handleCancelDispute = async() => {
+    try {
+      setIsSubmitting(true);
+    const { storyClient } = await createStoryClientWithWallet()
+    await storyClient.dispute.cancelDispute({
+      disputeId: cancelForm.disputeId,
+      data: "0x" + Buffer.from(cancelForm.data).toString("hex"),
+    })
     toast.success('Dispute cancelled successfully!');
     setShowCancelModal(false);
+    setIsSubmitting(false);
     setCancelForm({ disputeId: '', data: '' });
+    } catch (error) {
+      toast.error(error.message);
+      console.error(error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
-  const formatDate = (timestamp) => {
-    return new Date(timestamp * 1000).toLocaleString();
-  };
 
   useEffect(() => {
     fetchDisputesCount();
@@ -288,7 +309,6 @@ const Dispute_Management = () => {
             <div className="space-y-6 animate-fadeIn">
               <DisputeCard 
                 disputeData={disputeData} 
-                formatDate={formatDate}
                 onResolve={() => {
                   if (address === undefined) {
                     toast.error("Please connect your wallet");
@@ -354,6 +374,7 @@ const Dispute_Management = () => {
           onClose={() => setShowJudgementModal(false)}
           form={judgementForm}
           setForm={setJudgementForm}
+          isSubmitting={isSubmitting}
           onSubmit={handleSetJudgement}
         />
 
@@ -362,6 +383,7 @@ const Dispute_Management = () => {
           onClose={() => setShowCancelModal(false)}
           form={cancelForm}
           setForm={setCancelForm}
+          isSubmitting={isSubmitting}
           onSubmit={handleCancelDispute}
         />
       </div>
@@ -370,7 +392,7 @@ const Dispute_Management = () => {
 };
 
 // Dispute Card Component
-const DisputeCard = ({ disputeData, formatDate, onResolve, onSetJudgement, onCancel }) => {
+const DisputeCard = ({ disputeData, onResolve, onSetJudgement, onCancel }) => {
   const isPending = disputeData.status === 'Pending';
   
   return (
@@ -466,7 +488,7 @@ const DisputeCard = ({ disputeData, formatDate, onResolve, onSetJudgement, onCan
             
             <button
               onClick={onCancel}
-              className="bg-linear-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white py-3 px-6 rounded-lg font-semibold transition-all shadow-lg hover:shadow-red-500/30 flex items-center justify-center gap-2"
+              className="cursor-pointer bg-linear-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white py-3 px-6 rounded-lg font-semibold transition-all shadow-lg hover:shadow-red-500/30 flex items-center justify-center gap-2"
             >
               <XCircle size={20} />
               Cancel Dispute
@@ -780,9 +802,14 @@ const RaiseDisputeModal = ({ show, onClose, form, setForm, isSubmitting, onSubmi
   </Modal>
 );
 
-const SetJudgementModal = ({ show, onClose, form, setForm, onSubmit }) => (
+const SetJudgementModal = ({ show, onClose, form, setForm, isSubmitting, onSubmit }) => (
   <Modal show={show} onClose={onClose} title="Set Dispute Judgement" icon={Gavel}>
     <div className="space-y-4">
+      <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-4">
+        <p className="text-red-300 text-sm">
+          ⚠️ The setDisputeJudgement can only be called by whitelisted addresses and allows the caller to set the dispute judgment. Can only be called once as dispute decisions are immutable. If 3rd parties want to offer the possibility for recourse they can do so on their end and relay the final judgment.
+        </p>
+      </div>
       <div>
         <label className="block text-slate-300 font-medium mb-2">Dispute ID</label>
         <input
@@ -822,31 +849,32 @@ const SetJudgementModal = ({ show, onClose, form, setForm, onSubmit }) => (
         </div>
       </div>
       <div>
-        <label className="block text-slate-300 font-medium mb-2">Data (bytes)</label>
+        <label className="block text-slate-300 font-medium mb-2">Data (optional)</label>
         <textarea
           value={form.data}
           onChange={(e) => setForm({ ...form, data: e.target.value })}
-          placeholder="0x..."
+          placeholder="Fill out your data here."
           rows={4}
           className="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-3 text-slate-200 placeholder-slate-500 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 font-mono text-sm"
         />
       </div>
       <button
         onClick={onSubmit}
-        className="w-full bg-linear-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white py-3 rounded-lg font-semibold transition-all shadow-lg"
+        disabled={isSubmitting}
+        className="cursor-pointer w-full disabled:opacity-50 disabled:cursor-not-allowed bg-linear-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white py-3 rounded-lg font-semibold transition-all shadow-lg"
       >
-        Set Judgement
+        {isSubmitting ? 'Processing...' : 'Set Judgement'}
       </button>
     </div>
   </Modal>
 );
 
-const CancelDisputeModal = ({ show, onClose, form, setForm, onSubmit }) => (
+const CancelDisputeModal = ({ show, onClose, form, setForm, isSubmitting, onSubmit }) => (
   <Modal show={show} onClose={onClose} title="Cancel Dispute" icon={XCircle}>
     <div className="space-y-4">
       <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-4">
         <p className="text-red-300 text-sm">
-          ⚠️ Warning: Cancelling a dispute is irreversible. Make sure you want to proceed.
+          ⚠️ Currently, the UMA Arbitration Policy does not support cancelling disputes.
         </p>
       </div>
       <div>
@@ -861,20 +889,21 @@ const CancelDisputeModal = ({ show, onClose, form, setForm, onSubmit }) => (
         />
       </div>
       <div>
-        <label className="block text-slate-300 font-medium mb-2">Data (bytes)</label>
+        <label className="block text-slate-300 font-medium mb-2">Data (optional)</label>
         <textarea
           value={form.data}
           onChange={(e) => setForm({ ...form, data: e.target.value })}
-          placeholder="0x..."
+          placeholder="Fill out your data here."
           rows={4}
           className="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-3 text-slate-200 placeholder-slate-500 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 font-mono text-sm"
         />
       </div>
       <button
         onClick={onSubmit}
-        className="w-full bg-linear-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white py-3 rounded-lg font-semibold transition-all shadow-lg"
+        disabled={true}
+        className="w-full disabled:opacity-50 disabled:cursor-not-allowed bg-linear-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white py-3 rounded-lg font-semibold transition-all shadow-lg"
       >
-        Cancel Dispute
+        {isSubmitting ? 'Processing...' : 'Cancel Dispute'}
       </button>
     </div>
   </Modal>
