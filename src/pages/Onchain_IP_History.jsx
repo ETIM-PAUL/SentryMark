@@ -90,7 +90,7 @@ const Onchain_IP_History = () => {
 
         {/* Asset Data Display */}
         {!isLoading && assetData && (
-          <div className="space-y-6 animate-fadeIn max-w-4xl mx-auto">
+          <div className="space-y-6 animate-fadeIn max-w-2xl mx-auto">
             {/* Metadata Card - Reduced Width */}
             <MetadataCard metadata={assetData.metadata} tokenOwner={assetData.tokenOwner} isIPDisputed={assetData.isIPDisputed}  />
 
@@ -168,7 +168,8 @@ const MetadataCard = ({ metadata, tokenOwner, isIPDisputed }) => (
       <InfoRow 
         label="Registered" 
         value={formatDate(metadata.registrationDate) ?? "N/A"} 
-        icon={<Calendar size={16} />} 
+        icon={<Calendar size={16} />}
+        alwaysShowFull={true}
       />
       <InfoRow 
         label="IP Id" 
@@ -222,10 +223,10 @@ const LicenseCard = ({ license }) => (
 );
 
 // Info Row Component with Copy Functionality
-const InfoRow = ({ label, value, icon, mono, highlight, badge, badgeColor }) => {
+const InfoRow = ({ label, value, icon, mono, highlight, badge, badgeColor, alwaysShowFull = false }) => {
   const [showFull, setShowFull] = useState(false);
   const fullValue = value;
-  const displayValue = fullValue && fullValue.length > 20 && !showFull 
+  const displayValue = fullValue && fullValue.length > 20 && !showFull && !alwaysShowFull
     ? `${fullValue.slice(0, 6)}...${fullValue.slice(-4)}`
     : value;
 
@@ -241,7 +242,7 @@ const InfoRow = ({ label, value, icon, mono, highlight, badge, badgeColor }) => 
           {icon}
           {label}
         </span>
-        {fullValue && fullValue.length > 20 && (
+        {fullValue && fullValue.length > 20 && !alwaysShowFull && (
           <button
             onClick={() => setShowFull(!showFull)}
             className="text-purple-400 hover:text-purple-300 text-xs transition-colors"
