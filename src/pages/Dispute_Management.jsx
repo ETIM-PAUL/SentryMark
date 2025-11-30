@@ -124,7 +124,7 @@ const Dispute_Management = () => {
   // Handle modal submissions
   const handleResolveDispute = async() => {
     try {
-      setIsSubmitting(true);
+    setIsSubmitting(true);
     const { storyClient } = await createStoryClientWithWallet()
     await storyClient.dispute.resolveDispute({
       disputeId: resolveForm.disputeId,
@@ -135,13 +135,13 @@ const Dispute_Management = () => {
     setIsSubmitting(false);
     setResolveForm({ disputeId: '', data: '' });
     } catch (error) {
-      toast.error(error.message);
-      console.error(error);
+      const msg = error?.message || "";
+      const extracted = msg.split("\n").find(line => line.startsWith("Error:"));
+      console.error(extracted || "Unknown error");
+      toast.error(extracted || "Unknown error");
     } finally {
       setIsSubmitting(false);
     }
-    toast.success('Dispute resolved successfully!');
-    setShowResolveModal(false);
   };
 
   const handleRaiseDispute = async () => {
@@ -199,8 +199,10 @@ const Dispute_Management = () => {
       setShowJudgementModal(false);
       setJudgementForm({ disputeId: '', decision: true, data: '' });
     } catch (error) {
-      toast.error(error.message);
-      console.error(error);
+      const msg = error?.message || "";
+      const extracted = msg.split("\n").find(line => line.startsWith("Error:"));
+      console.error(extracted || "Unknown error");
+      toast.error(extracted || "Unknown error");
     } finally {
       setIsSubmitting(false);
     }
@@ -219,8 +221,10 @@ const Dispute_Management = () => {
     setIsSubmitting(false);
     setCancelForm({ disputeId: '', data: '' });
     } catch (error) {
-      toast.error(error.message);
-      console.error(error);
+      const msg = error?.message || "";
+      const extracted = msg.split("\n").find(line => line.startsWith("Error:"));
+      console.error(extracted || "Unknown error");
+      toast.error(extracted || "Unknown error");
     } finally {
       setIsSubmitting(false);
     }
@@ -324,6 +328,7 @@ const Dispute_Management = () => {
             <div className="space-y-6 animate-fadeIn">
               <DisputeCard 
                 disputeData={disputeData} 
+                address={address}
                 onResolve={() => {
                   if (address === undefined) {
                     toast.error("Please connect your wallet");
@@ -408,7 +413,7 @@ const Dispute_Management = () => {
 };
 
 // Dispute Card Component
-const DisputeCard = ({ disputeData, onResolve, onSetJudgement, onCancel }) => {
+const DisputeCard = ({ disputeData, address, onResolve, onSetJudgement, onCancel }) => {
   // const isPending = disputeData.status === 'Pending Judgement';
   
   return (
@@ -513,12 +518,11 @@ const DisputeCard = ({ disputeData, onResolve, onSetJudgement, onCancel }) => {
       )}
 
       {/* Message for non-pending disputes */}
-      {(Number(disputeData.infringerDisputeId) === 0)
-      ||
-      (Number(disputeData.infringerDisputeId) > 0 && Buffer.from(disputeData.currentTag.replace(/^0x/, ""), "hex").toString("ascii").replace(/\0+$/, "") === "" )
-      ||
-      (Buffer.from(disputeData.currentTag.replace(/^0x/, ""), "hex").toString("ascii").replace(/\0+$/, "") !== "IN_DISPUTE" ||
-       Buffer.from(disputeData.currentTag.replace(/^0x/, ""), "hex").toString("ascii").replace(/\0+$/, "") !== "" )
+      {(Buffer.from(disputeData.currentTag.replace(/^0x/, ""), "hex").toString("ascii").replace(/\0+$/, "") !== "" 
+        && 
+        Buffer.from(disputeData.currentTag.replace(/^0x/, ""), "hex").toString("ascii").replace(/\0+$/, "") !== "IN_DISPUTE"
+      )
+
        && (
         <div className="border-t border-purple-500/20 pt-6">
           <div className="bg-slate-900/50 border border-slate-700/50 rounded-lg p-4 text-center">
@@ -940,7 +944,7 @@ const CancelDisputeModal = ({ show, onClose, form, setForm, isSubmitting, onSubm
       </div>
       <button
         onClick={onSubmit}
-        disabled={true}
+        // disabled={true}
         className="w-full disabled:opacity-50 disabled:cursor-not-allowed bg-linear-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white py-3 rounded-lg font-semibold transition-all shadow-lg"
       >
         {isSubmitting ? 'Processing...' : 'Cancel Dispute'}

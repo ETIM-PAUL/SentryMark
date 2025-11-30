@@ -4,7 +4,7 @@ import Header from '../components/header';
 import { IPAssetLoadingSkeleton } from '../components/SkeletonLoader';
 import { fetchIPAssetData } from '../utils/mockData';
 import toast, { Toaster } from 'react-hot-toast';
-import { fetchIPByIpId } from '../queries';
+import { fetchIPByIpId, fetchIPTips } from '../queries';
 import { formatDate } from '../utils';
 
 const Onchain_IP_History = () => {
@@ -26,18 +26,21 @@ const Onchain_IP_History = () => {
 
     try {
       const data2 = await fetchIPByIpId(assetId.toLowerCase());
+      const tips = await fetchIPTips(assetId.toLowerCase());
+      console.log("tips", tips)
       if (data2.metadata === undefined) {
         toast.error("No IP Asset found with this address");
         return;
       }
       // const data = await fetchIPAssetData(assetId.trim());
-      setAssetData({"metadata":data2.metadata, "tokenOwner":data2.tokenOwner, "isIPDisputed":data2.isIPDisputed});
+      setAssetData({"metadata":data2.metadata, "tokenOwner":data2.tokenOwner, "isIPDisputed":data2.isIPDisputed, "tips":tips});
       console.log("data", data2)
       setTipsPage(1);
       setRevenueClaimsPage(1);
       toast.success('IP Asset data loaded successfully!');
     } catch (error) {
-      toast.error('IP Asset not found. Try IP-001, IP-002, or IP-003');
+      console.log("error", error)
+      toast.error('IP Asset not found. Please enter a valid IP Asset ID.');
     } finally {
       setIsLoading(false);
     }
@@ -115,13 +118,13 @@ const Onchain_IP_History = () => {
             </div>
 
             {/* Tips Table */}
-            {/* <TipsTable 
+            <TipsTable 
               tips={assetData.tips} 
               currentPage={tipsPage}
               setCurrentPage={setTipsPage}
               paginatedTips={paginateData(assetData.tips, tipsPage)}
               totalPages={totalPages(assetData.tips)}
-            /> */}
+            />
 
             {/* Revenue Claims Table */}
             {/* <RevenueClaimsTable 
@@ -224,7 +227,7 @@ const TipsTable = ({ tips, currentPage, setCurrentPage, paginatedTips, totalPage
   <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 border border-purple-500/20 shadow-lg">
     <div className="flex items-center gap-2 mb-6">
       <DollarSign className="text-purple-400" size={24} />
-      <h3 className="text-xl font-bold text-slate-200">Tips Received</h3>
+      <h3 className="text-xl font-bold text-slate-200">Royalty Received</h3>
       <span className="ml-auto bg-purple-500/20 text-purple-300 px-3 py-1 rounded-full text-sm font-medium">
         {tips.length} Total
       </span>
@@ -238,25 +241,13 @@ const TipsTable = ({ tips, currentPage, setCurrentPage, paginatedTips, totalPage
             <th className="text-left text-slate-400 font-medium text-sm py-3 px-2">
               <div className="flex items-center gap-1">
                 <User size={14} />
-                Tipper
+                Sender
               </div>
             </th>
             <th className="text-left text-slate-400 font-medium text-sm py-3 px-2">
               <div className="flex items-center gap-1">
                 <DollarSign size={14} />
                 Amount
-              </div>
-            </th>
-            <th className="text-left text-slate-400 font-medium text-sm py-3 px-2">
-              <div className="flex items-center gap-1">
-                <Calendar size={14} />
-                Date
-              </div>
-            </th>
-            <th className="text-left text-slate-400 font-medium text-sm py-3 px-2">
-              <div className="flex items-center gap-1">
-                <Hash size={14} />
-                Transaction
               </div>
             </th>
           </tr>
@@ -266,14 +257,14 @@ const TipsTable = ({ tips, currentPage, setCurrentPage, paginatedTips, totalPage
             <tr key={tip.id} className="border-b border-slate-700/30 hover:bg-slate-700/20 transition-colors">
               <td className="py-4 px-2">
                 <div>
-                  <div className="text-slate-200 font-medium">{tip.tipperName}</div>
-                  <div className="text-slate-500 text-xs font-mono">{tip.tipper.slice(0, 10)}...{tip.tipper.slice(-8)}</div>
+                  {/* <div className="text-slate-200 font-medium">{tip.sender}</div> */}
+                  <div className="text-slate-500 text-xs font-mono">{tip.sender.slice(0, 10)}...{tip.sender.slice(-8)}</div>
                 </div>
               </td>
               <td className="py-4 px-2">
-                <span className="text-purple-400 font-bold">{tip.amount}</span>
+                <span className="text-purple-400 font-bold">{tip.amountAfterFee}</span>
               </td>
-              <td className="py-4 px-2 text-slate-300">{tip.date}</td>
+              {/* <td className="py-4 px-2 text-slate-300">{tip.date}</td>
               <td className="py-4 px-2">
                 <a 
                   href={`https://etherscan.io/tx/${tip.transactionHash}`}
@@ -284,7 +275,8 @@ const TipsTable = ({ tips, currentPage, setCurrentPage, paginatedTips, totalPage
                   {tip.transactionHash.slice(0, 10)}...
                   <ExternalLink size={12} />
                 </a>
-              </td>
+              
+              </td> */}
             </tr>
           ))}
         </tbody>
