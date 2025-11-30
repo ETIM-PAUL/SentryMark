@@ -2,10 +2,10 @@ import React, { useState } from 'react';
 import { Search, FileText, Shield, TrendingUp, DollarSign, Calendar, User, Hash, ExternalLink, ChevronLeft, ChevronRight } from 'lucide-react';
 import Header from '../components/header';
 import { IPAssetLoadingSkeleton } from '../components/SkeletonLoader';
-import { fetchIPAssetData } from '../utils/mockData';
 import toast, { Toaster } from 'react-hot-toast';
 import { fetchIPByIpId, fetchIPTips } from '../queries';
-import { formatDate } from '../utils';
+import { formatDate, getTokenMetadata } from '../utils';
+import { mockIPAssets } from '../utils/mockData';
 
 const Onchain_IP_History = () => {
   const [assetId, setAssetId] = useState('');
@@ -27,14 +27,13 @@ const Onchain_IP_History = () => {
     try {
       const data2 = await fetchIPByIpId(assetId.toLowerCase());
       const tips = await fetchIPTips(assetId.toLowerCase());
-      console.log("tips", tips)
       if (data2.metadata === undefined) {
         toast.error("No IP Asset found with this address");
         return;
       }
       // const data = await fetchIPAssetData(assetId.trim());
       setAssetData({"metadata":data2.metadata, "tokenOwner":data2.tokenOwner, "isIPDisputed":data2.isIPDisputed, "tips":tips});
-      console.log("data", data2)
+
       setTipsPage(1);
       setRevenueClaimsPage(1);
       toast.success('IP Asset data loaded successfully!');
@@ -52,17 +51,17 @@ const Onchain_IP_History = () => {
     }
   };
 
-  // Pagination helpers
-  const paginateData = (data, page) => {
-    const startIndex = (page - 1) * itemsPerPage;
-    const endIndex = startIndex + itemsPerPage;
-    return data.slice(startIndex, endIndex);
-  };
-
-  const totalPages = (data) => Math.ceil(data.length / itemsPerPage);
+    // Pagination helpers
+    const paginateData = (data, page) => {
+      const startIndex = (page - 1) * itemsPerPage;
+      const endIndex = startIndex + itemsPerPage;
+      return data.slice(startIndex, endIndex);
+    };
+  
+    const totalPages = (data) => Math.ceil(data.length / itemsPerPage);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+    <div className="min-h-screen bg-linear-to-br from-slate-900 via-purple-900 to-slate-900">
       <Header />
       <Toaster position="top-right" />
       
@@ -92,7 +91,7 @@ const Onchain_IP_History = () => {
               <button
                 onClick={handleFetchAsset}
                 disabled={isLoading || !assetId.trim()}
-                className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 disabled:from-slate-600 disabled:to-slate-700 text-white px-8 py-3 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 shadow-lg hover:shadow-purple-500/20 disabled:cursor-not-allowed"
+                className="bg-linear-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 disabled:from-slate-600 disabled:to-slate-700 text-white px-8 py-3 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 shadow-lg hover:shadow-purple-500/20 disabled:cursor-not-allowed"
               >
                 <Search size={20} />
                 {isLoading ? 'Fetching...' : 'Fetch'}
@@ -107,14 +106,11 @@ const Onchain_IP_History = () => {
 
         {/* Asset Data Display */}
         {!isLoading && assetData && (
-          <div className="space-y-6 animate-fadeIn">
-            {/* Metadata and License Cards Row */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Metadata Card */}
-              <MetadataCard metadata={assetData.metadata} tokenOwner={assetData.tokenOwner} isIPDisputed={assetData.isIPDisputed}  />
-              
-              {/* License Card */}
-              {/* <LicenseCard license={assetData.license} /> */}
+          <div className="space-y-6 animate-fadeIn max-w-6xl mx-auto">
+            {/* Metadata Card - Reduced Width */}
+            <div className='flex w-full gap-6'>
+            <MetadataCard metadata={assetData.metadata} tokenOwner={assetData.tokenOwner} isIPDisputed={assetData.isIPDisputed}  />
+            <LicenseCard license={mockIPAssets["IP-001"].license}  />
             </div>
 
             {/* Tips Table */}
@@ -152,35 +148,78 @@ const Onchain_IP_History = () => {
 
 // Metadata Card Component
 const MetadataCard = ({ metadata, tokenOwner, isIPDisputed }) => (
-  <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 border border-purple-500/20 shadow-lg hover:shadow-xl hover:border-purple-500/30 transition-all">
-    <div className="flex justify-between items-center gap-2 mb-6">
-      <div className='flex gap-2'>
-      <FileText className="text-purple-400" size={24} />
-      <h3 className="text-xl font-bold text-slate-200">Asset Metadata</h3>
+  <div className="w-full bg-slate-800/50 backdrop-blur-sm rounded-xl p-8 border border-purple-500/20 shadow-xl hover:shadow-2xl hover:border-purple-500/30 transition-all">
+    <div className="flex items-center justify-between mb-6">
+      <div className='flex items-center gap-3'>
+        <Shield className="text-purple-400" size={28} />
+        <h3 className="text-2xl font-bold text-slate-200">Asset Metadata</h3>
       </div>
       {isIPDisputed &&
-      <span className={`px-4 py-2 rounded-full text-sm font-semibold border bg-red-500/20 text-red-400 border-red-500/30`}>
-      Disputed
-    </span>
-    }
+        <span className={`px-4 py-2 rounded-full text-sm font-semibold border bg-red-500/20 text-red-400 border-red-500/30`}>
+          Disputed
+        </span>
+      }
     </div>
+    
+    {/* Single Column Layout */}
     <div className="space-y-4">
-      <InfoRow label="Asset ID" value={metadata.id.slice(0,5)} icon={<Hash size={16} />} />
-      <InfoRow label="Name" value={metadata.name ?? "N/A"} />
-      <InfoRow label="Uri" value={metadata.uri ?? "N/A"} />
-      <InfoRow label="Creator" value={tokenOwner} mono />
-      <InfoRow label="Registered" value={formatDate(metadata.registrationDate) ?? "N/A"} icon={<Calendar size={16} />} />
-      <InfoRow label="IP Id" value={metadata.ipId.slice(0,5)} />
-      <InfoRow label="Chain Id" value={metadata.chainId} mono />
-      <InfoRow label="Token Contract" value={metadata.tokenContract.slice(0,5)} icon={<TrendingUp size={16} />} highlight />
-      <InfoRow label="Token Id" value={metadata.tokenId} icon={<TrendingUp size={16} />} highlight />
+      <InfoRow 
+        label="Asset ID" 
+        value={metadata.id} 
+        icon={<Hash size={16} />} 
+      />
+      <InfoRow 
+        label="Name" 
+        value={metadata.name ?? "N/A"} 
+        icon={<FileText size={16} />} 
+      />
+      <InfoRow 
+        label="Uri" 
+        value={metadata.uri ?? "N/A"} 
+        icon={<ExternalLink size={16} />} 
+      />
+      <InfoRow 
+        label="Creator" 
+        value={tokenOwner} 
+        icon={<User size={16} />} 
+        mono 
+      />
+      <InfoRow 
+        label="Registered" 
+        value={formatDate(metadata.registrationDate) ?? "N/A"} 
+        icon={<Calendar size={16} />} 
+      />
+      <InfoRow 
+        label="IP Id" 
+        value={metadata.ipId} 
+        icon={<Shield size={16} />} 
+        mono 
+      />
+      <InfoRow 
+        label="Chain Id" 
+        value={metadata.chainId} 
+        icon={<Hash size={16} />} 
+        highlight 
+      />
+      <InfoRow 
+        label="Token Contract" 
+        value={metadata.tokenContract} 
+        icon={<TrendingUp size={16} />} 
+        mono 
+      />
+      <InfoRow 
+        label="Token Id" 
+        value={metadata.tokenId} 
+        icon={<Hash size={16} />} 
+        highlight 
+      />
     </div>
   </div>
 );
 
 // License Card Component
 const LicenseCard = ({ license }) => (
-  <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 border border-purple-500/20 shadow-lg hover:shadow-xl hover:border-purple-500/30 transition-all">
+  <div className="w-full bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 border border-purple-500/20 shadow-lg hover:shadow-xl hover:border-purple-500/30 transition-all">
     <div className="flex items-center gap-2 mb-6">
       <Shield className="text-purple-400" size={24} />
       <h3 className="text-xl font-bold text-slate-200">License Details</h3>
@@ -201,26 +240,60 @@ const LicenseCard = ({ license }) => (
   </div>
 );
 
-// Info Row Component
-const InfoRow = ({ label, value, icon, mono, highlight, fullWidth, badge, badgeColor }) => (
-  <div className={`flex ${fullWidth ? 'flex-col' : 'justify-between items-start'} gap-2`}>
-    <span className="text-slate-400 text-sm font-medium flex items-center gap-1">
-      {icon}
-      {label}:
-    </span>
-    {badge ? (
-      <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-        badgeColor === 'green' ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'
-      }`}>
-        {value}
-      </span>
-    ) : (
-      <span className={`text-slate-200 ${mono ? 'font-mono text-xs' : ''} ${highlight ? 'text-purple-400 font-bold' : ''} ${fullWidth ? 'mt-1' : 'text-right'}`}>
-        {value}
-      </span>
-    )}
-  </div>
-);
+// Info Row Component with Copy Functionality
+const InfoRow = ({ label, value, icon, mono, highlight, badge, badgeColor }) => {
+  const [showFull, setShowFull] = useState(false);
+  const fullValue = value;
+  const displayValue = fullValue && fullValue.length > 20 && !showFull 
+    ? `${fullValue.slice(0, 6)}...${fullValue.slice(-4)}`
+    : value;
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(fullValue || value);
+    toast.success('Copied to clipboard!');
+  };
+
+  return (
+    <div className="bg-slate-900/30 rounded-lg p-4 hover:bg-slate-900/50 transition-all">
+      <div className="flex items-center justify-between mb-2">
+        <span className="text-slate-400 text-sm font-medium flex items-center gap-2">
+          {icon}
+          {label}
+        </span>
+        {fullValue && fullValue.length > 20 && (
+          <button
+            onClick={() => setShowFull(!showFull)}
+            className="text-purple-400 hover:text-purple-300 text-xs transition-colors"
+          >
+            {showFull ? 'Show less' : 'Show full'}
+          </button>
+        )}
+      </div>
+      {badge ? (
+        <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${
+          badgeColor === 'green' ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'
+        }`}>
+          {value}
+        </span>
+      ) : (
+        <div className="flex items-center gap-2">
+          <span 
+            className={`text-slate-200 ${mono ? 'font-mono text-xs' : ''} ${highlight ? 'text-purple-400 font-bold' : ''} break-all`}
+          >
+            {displayValue}
+          </span>
+          <button
+            onClick={handleCopy}
+            className="text-purple-400 hover:text-purple-300 transition-colors shrink-0"
+            title="Copy to clipboard"
+          >
+            <FileText size={14} />
+          </button>
+        </div>
+      )}
+    </div>
+  );
+};
 
 // Tips Table Component
 const TipsTable = ({ tips, currentPage, setCurrentPage, paginatedTips, totalPages }) => (
@@ -246,7 +319,6 @@ const TipsTable = ({ tips, currentPage, setCurrentPage, paginatedTips, totalPage
             </th>
             <th className="text-left text-slate-400 font-medium text-sm py-3 px-2">
               <div className="flex items-center gap-1">
-                <DollarSign size={14} />
                 Amount
               </div>
             </th>
@@ -262,7 +334,7 @@ const TipsTable = ({ tips, currentPage, setCurrentPage, paginatedTips, totalPage
                 </div>
               </td>
               <td className="py-4 px-2">
-                <span className="text-purple-400 font-bold">{tip.amountAfterFee}</span>
+                <span className="text-purple-400 font-bold">{tip.amountAfterFee} {getTokenMetadata(tip.receiverIpId)?.symbol}</span>
               </td>
               {/* <td className="py-4 px-2 text-slate-300">{tip.date}</td>
               <td className="py-4 px-2">

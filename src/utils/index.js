@@ -1,6 +1,8 @@
-import { createWalletClient, custom } from "viem";
+import { createPublicClient, createWalletClient, custom, erc20Abi, getContract, http } from "viem";
 import { storyAeneid } from "viem/chains";
+import { ethers } from "ethers";
 import { StoryClient } from '@story-protocol/core-sdk'
+import { mockErc20_abi } from "../abi/mockErc20_abi";
 
 export function secondsFromNow(timestamp) {
   return Math.floor((new Date(timestamp) - new Date()) / 1000);
@@ -78,4 +80,39 @@ export async function createStoryClientWithWallet() {
   })
 
   return { storyClient, walletClient, address }
+}
+
+const client = createPublicClient({
+  chain: storyAeneid,
+  transport: http(RPC_URL)
+});
+
+export async function getTokenMetadata(tokenAddress) {
+  try {
+  let provider = new ethers.JsonRpcProvider(RPC_URL)
+
+  const contract = new ethers.Contract(tokenAddress, mockErc20_abi, provider)
+
+  const name = await contract.name();
+  const symbol = await contract.symbol();
+  const decimals = await contract.decimals();
+
+    return { name, symbol, decimals };
+  } catch (error) {
+    console.error("Failed to fetch token metadata:", error);
+    return null;
+  }
+}
+
+
+async function isFunctionSupported(address, signature) {
+  try {
+    await client.call({
+      to: address,
+      data: signature,
+    });
+    return true;
+  } catch {
+    return false;
+  }
 }
