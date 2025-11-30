@@ -96,15 +96,18 @@ const Dispute_Management = () => {
          targetTag: res[5],
          currentTag: res[6],
          infringerDisputeId: Number(res[7]),
-         status: Number(res[7]) === 0 ? 'Pending' : 'Active'
+         status: Number(res[7]) > 0 ? 'Judged' : 'Pending Judgement'
        };
        setTimeout(() => {
         console.log(formattedResponse)
         if (formattedResponse.targetIpId === "0x0000000000000000000000000000000000000000") {
           toast.error("No Dispute found with this ID");
+          setIsLoading(false);
           return;
         }
-  
+        // contract.isIpTagged(formattedResponse.targetIpId).then((res) => {
+        //   formattedResponse.isIpTagged = res;
+        // })
         setDisputeData(formattedResponse);
         setIsLoading(false);
         toast.success('Dispute data loaded successfully!');
@@ -119,14 +122,26 @@ const Dispute_Management = () => {
   };
 
   // Handle modal submissions
-  const handleResolveDispute = () => {
-    if (!resolveForm.disputeId || !resolveForm.data) {
-      toast.error('Please fill all fields');
-      return;
+  const handleResolveDispute = async() => {
+    try {
+      setIsSubmitting(true);
+    const { storyClient } = await createStoryClientWithWallet()
+    await storyClient.dispute.resolveDispute({
+      disputeId: resolveForm.disputeId,
+      data: "0x" + Buffer.from(resolveForm.data).toString("hex"),
+    })
+    toast.success('Dispute resolved successfully!');
+    setShowResolveModal(false);
+    setIsSubmitting(false);
+    setResolveForm({ disputeId: '', data: '' });
+    } catch (error) {
+      toast.error(error.message);
+      console.error(error);
+    } finally {
+      setIsSubmitting(false);
     }
     toast.success('Dispute resolved successfully!');
     setShowResolveModal(false);
-    setResolveForm({ disputeId: '', data: '' });
   };
 
   const handleRaiseDispute = async () => {
@@ -353,6 +368,7 @@ const Dispute_Management = () => {
           onClose={() => setShowResolveModal(false)}
           form={resolveForm}
           setForm={setResolveForm}
+          isSubmitting={isSubmitting}
           onSubmit={handleResolveDispute}
         />
 
@@ -393,7 +409,7 @@ const Dispute_Management = () => {
 
 // Dispute Card Component
 const DisputeCard = ({ disputeData, onResolve, onSetJudgement, onCancel }) => {
-  const isPending = disputeData.status === 'Pending';
+  // const isPending = disputeData.status === 'Pending Judgement';
   
   return (
     <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-8 border border-purple-500/20 shadow-xl hover:shadow-2xl hover:border-purple-500/30 transition-all">
@@ -409,24 +425,28 @@ const DisputeCard = ({ disputeData, onResolve, onSetJudgement, onCancel }) => {
         {/* Left Column */}
         <div className="space-y-4">
           <InfoRow 
-            label="Target IP ID" 
+            label="Target IP ID"
+            showFullState={true}
             value={disputeData.targetIpId} 
             fullValue={disputeData.targetIpId}
             icon={<Shield size={16} />}
           />
           <InfoRow 
             label="Dispute Initiator" 
+            showFullState={true}
             value={disputeData.disputeInitiator}
             fullValue={disputeData.disputeInitiator}
             icon={<AlertTriangle size={16} />}
           />
           <InfoRow 
             label="Dispute Timestamp" 
+            showFullState={true}
             value={formatDate(disputeData.disputeTimestamp)}
             icon={<Clock size={16} />}
           />
           <InfoRow 
             label="Arbitration Policy" 
+            showFullState={true}
             value={disputeData.arbitrationPolicy}
             fullValue={disputeData.arbitrationPolicy}
             icon={<Gavel size={16} />}
@@ -437,22 +457,25 @@ const DisputeCard = ({ disputeData, onResolve, onSetJudgement, onCancel }) => {
         <div className="space-y-4">
           <InfoRow 
             label="Evidence Hash" 
+            showFullState={true}
             value={disputeData.disputeEvidenceHash}
             fullValue={disputeData.disputeEvidenceHash}
             icon={<FileText size={16} />}
             mono
           />
           <InfoRow 
-            label="Target Tag" 
-            value={disputeData.targetTag}
-            fullValue={disputeData.targetTag}
+            label="Target Tag"
+            showFullState={false}
+            value={Buffer.from(disputeData.targetTag.replace(/^0x/, ""), "hex").toString("ascii").replace(/\0+$/, "")}
+            fullValue={Buffer.from(disputeData.targetTag.replace(/^0x/, ""), "hex").toString("ascii").replace(/\0+$/, "")}
             icon={<FileText size={16} />}
             mono
           />
           <InfoRow 
-            label="Current Tag" 
-            value={disputeData.currentTag}
-            fullValue={disputeData.currentTag}
+            label="Current Tag"
+            showFullState={false}
+            value={Buffer.from(disputeData.currentTag.replace(/^0x/, ""), "hex").toString("ascii").replace(/\0+$/, "")}
+            fullValue={Buffer.from(disputeData.currentTag.replace(/^0x/, ""), "hex").toString("ascii").replace(/\0+$/, "")}
             icon={<FileText size={16} />}
             mono
           />
@@ -460,24 +483,16 @@ const DisputeCard = ({ disputeData, onResolve, onSetJudgement, onCancel }) => {
       </div>
 
       {/* Action Buttons - Only show if status is Pending */}
-      {isPending && (
+      {Buffer.from(disputeData.currentTag.replace(/^0x/, ""), "hex").toString("ascii").replace(/\0+$/, "") === "IN_DISPUTE" && (
         <div className="border-t border-purple-500/20 pt-6">
           <div className="bg-purple-500/10 border border-purple-500/20 rounded-lg p-4 mb-4">
             <p className="text-purple-300 text-sm font-medium flex items-center gap-2">
               <TrendingUp size={16} />
-              This dispute is pending. You can take action below:
+              This dispute is pending judgement. You can take action below:
             </p>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <button
-              onClick={onResolve}
-              className="bg-linear-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white py-3 px-6 rounded-lg font-semibold transition-all shadow-lg hover:shadow-green-500/30 flex items-center justify-center gap-2"
-            >
-              <CheckCircle size={20} />
-              Resolve Dispute
-            </button>
-            
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <button
               onClick={onSetJudgement}
               className="bg-linear-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white py-3 px-6 rounded-lg font-semibold transition-all shadow-lg hover:shadow-blue-500/30 flex items-center justify-center gap-2"
@@ -498,12 +513,28 @@ const DisputeCard = ({ disputeData, onResolve, onSetJudgement, onCancel }) => {
       )}
 
       {/* Message for non-pending disputes */}
-      {!isPending && (
+      {(Number(disputeData.infringerDisputeId) === 0)
+      ||
+      (Number(disputeData.infringerDisputeId) > 0 && Buffer.from(disputeData.currentTag.replace(/^0x/, ""), "hex").toString("ascii").replace(/\0+$/, "") === "" )
+      ||
+      (Buffer.from(disputeData.currentTag.replace(/^0x/, ""), "hex").toString("ascii").replace(/\0+$/, "") !== "IN_DISPUTE" ||
+       Buffer.from(disputeData.currentTag.replace(/^0x/, ""), "hex").toString("ascii").replace(/\0+$/, "") !== "" )
+       && (
         <div className="border-t border-purple-500/20 pt-6">
           <div className="bg-slate-900/50 border border-slate-700/50 rounded-lg p-4 text-center">
             <p className="text-slate-400 text-sm">
-              This dispute has been <span className="font-semibold text-slate-300">{disputeData.status.toLowerCase()}</span> and no further actions can be taken.
+              This dispute has been <span className="font-semibold text-slate-300">{disputeData.status.toLowerCase()}</span> and only action is to resolve it.
             </p>
+          </div>
+
+          <div className="gap-4 mt-2 w-full">
+            <button
+              onClick={onResolve}
+              className="w-full cursor-pointer bg-linear-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white py-3 px-6 rounded-lg font-semibold transition-all shadow-lg hover:shadow-green-500/30 flex items-center justify-center gap-2"
+            >
+              <CheckCircle size={20} />
+              Resolve Dispute
+            </button>
           </div>
         </div>
       )}
@@ -528,9 +559,9 @@ const StatusBadge = ({ status }) => {
 };
 
 // Info Row Component with Copy
-const InfoRow = ({ label, value, fullValue, icon, mono }) => {
+const InfoRow = ({ label, value, fullValue, icon, mono, showFullState }) => {
   const [showFull, setShowFull] = useState(false);
-  const displayValue = fullValue && fullValue.length > 20 && !showFull 
+  const displayValue = fullValue && fullValue.length > 30 && !showFull 
     ? `${fullValue.slice(0, 6)}...${fullValue.slice(-4)}`
     : value;
 
@@ -546,7 +577,7 @@ const InfoRow = ({ label, value, fullValue, icon, mono }) => {
           {icon}
           {label}
         </span>
-        {fullValue && fullValue.length > 20 && (
+        {showFullState && fullValue && fullValue.length > 20 && (
           <button
             onClick={() => setShowFull(!showFull)}
             className="text-purple-400 hover:text-purple-300 text-xs transition-colors"
@@ -555,11 +586,12 @@ const InfoRow = ({ label, value, fullValue, icon, mono }) => {
           </button>
         )}
       </div>
+        {displayValue.length > 0 ?
       <div className="flex items-center gap-2">
         <span 
           className={`text-slate-200 ${mono ? 'font-mono text-xs' : ''} break-all`}
         >
-          {displayValue}
+        {displayValue}
         </span>
         <button
           onClick={handleCopy}
@@ -569,6 +601,13 @@ const InfoRow = ({ label, value, fullValue, icon, mono }) => {
           <FileText size={14} />
         </button>
       </div>
+      :
+      <div className="flex items-center gap-2">
+        <span className="text-slate-400 text-sm font-medium flex items-center gap-2">
+          N/A
+        </span>
+      </div>
+      }
     </div>
   );
 };
@@ -641,7 +680,7 @@ const Modal = ({ show, onClose, title, children, icon: Icon }) => {
   );
 };
 
-const ResolveDisputeModal = ({ show, onClose, form, setForm, onSubmit }) => (
+const ResolveDisputeModal = ({ show, onClose, form, setForm, isSubmitting, onSubmit }) => (
   <Modal show={show} onClose={onClose} title="Resolve Dispute" icon={CheckCircle}>
     <div className="space-y-4">
       <div>
@@ -656,20 +695,21 @@ const ResolveDisputeModal = ({ show, onClose, form, setForm, onSubmit }) => (
         />
       </div>
       <div>
-        <label className="block text-slate-300 font-medium mb-2">Data (bytes)</label>
+        <label className="block text-slate-300 font-medium mb-2">Data (optional)</label>
         <textarea
           value={form.data}
           onChange={(e) => setForm({ ...form, data: e.target.value })}
-          placeholder="0x..."
+          placeholder="Fill out your data here."
           rows={4}
           className="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-3 text-slate-200 placeholder-slate-500 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 font-mono text-sm"
         />
       </div>
       <button
         onClick={onSubmit}
-        className="w-full bg-linear-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white py-3 rounded-lg font-semibold transition-all shadow-lg"
+        disabled={isSubmitting}
+        className="cursor-pointer w-full disabled:opacity-50 disabled:cursor-not-allowed bg-linear-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white py-3 rounded-lg font-semibold transition-all shadow-lg"
       >
-        Confirm Resolution
+        {isSubmitting ? 'Processing...' : 'Confirm Resolution'}
       </button>
     </div>
   </Modal>
