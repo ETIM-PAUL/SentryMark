@@ -1,28 +1,22 @@
 import React, { useState } from 'react';
-import { Search, FileText, Shield, Users, GitBranch, Network, ChevronDown, ChevronUp, Copy, Play, Pause, Volume2, VolumeX, Music, Radio, MoreVertical, Download } from 'lucide-react';
+import { Search, FileText, Shield, Users, GitBranch, Network, ChevronDown, ChevronUp, Copy, Play, Pause, Volume2, VolumeX, Music, Radio, MoreVertical, Download, DollarSign, User } from 'lucide-react';
 import Header from '../components/header';
 import toast, { Toaster } from 'react-hot-toast';
-<<<<<<< HEAD
 import { fetchIPByIpId, fetchIPTips } from '../queries';
 import { formatDate, getTokenMetadata } from '../utils';
 import { mockIPAssets } from '../utils/mockData';
-=======
+import IPAssetLoadingSkeleton from '../components/SkeletonLoader';
+import { RelationshipStats } from '../components/RelationshipStats';
 import { fetchAPIdata } from '../queries/api_queries';
-import {IPAssetLoadingSkeleton} from '../components/SkeletonLoader';
-
->>>>>>> b855bf92b338fde76d22c70714a1e4a5e1af12fb
 
 const Onchain_IP_History = () => {
   const [assetId, setAssetId] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [assetData, setAssetData] = useState(null);
-<<<<<<< HEAD
   const [tipsPage, setTipsPage] = useState(1);
+  const [mediaLoading, setMediaLoading] = useState(false);
   const [revenueClaimsPage, setRevenueClaimsPage] = useState(1);
   const itemsPerPage = 5;
-=======
-  const [mediaLoading, setMediaLoading] = useState(false);
->>>>>>> b855bf92b338fde76d22c70714a1e4a5e1af12fb
 
   const handleFetchAsset = async () => {
     if (!assetId.trim()) {
@@ -35,21 +29,24 @@ const Onchain_IP_History = () => {
     setMediaLoading(true);
 
     try {
-<<<<<<< HEAD
-      const data2 = await fetchIPByIpId(assetId.toLowerCase());
-      const tips = await fetchIPTips(assetId.toLowerCase());
-      if (data2.metadata === undefined) {
-=======
       const data = await fetchAPIdata(assetId.toLowerCase());
+      const tips = await fetchIPTips(assetId.toLowerCase());
       if (!data) {
->>>>>>> b855bf92b338fde76d22c70714a1e4a5e1af12fb
         toast.error("No IP Asset found with this address");
         setIsLoading(false);
         return;
       }
-<<<<<<< HEAD
-      // const data = await fetchIPAssetData(assetId.trim());
-      setAssetData({"metadata":data2.metadata, "tokenOwner":data2.tokenOwner, "isIPDisputed":data2.isIPDisputed, "tips":tips});
+      
+      setAssetData({...data, "tips":tips});
+
+      // const data2 = await fetchIPByIpId(assetId.toLowerCase());
+      // if (data2.metadata === undefined) {
+      //   toast.error("No IP Asset found with this address");
+      //   setIsLoading(false);
+      //   return;
+      // }
+      // // const data = await fetchIPAssetData(assetId.trim());
+      // setAssetData({"metadata":data2.metadata, "tokenOwner":data2.tokenOwner, "isIPDisputed":data2.isIPDisputed, "tips":tips});
 
       setTipsPage(1);
       setRevenueClaimsPage(1);
@@ -57,15 +54,6 @@ const Onchain_IP_History = () => {
     } catch (error) {
       console.log("error", error)
       toast.error('IP Asset not found. Please enter a valid IP Asset ID.');
-=======
-      
-      setAssetData(data);
-      console.log("Asset data loaded:", data);
-      toast.success('IP Asset data loaded successfully!');
-    } catch (error) {
-      console.log(error);
-      toast.error('IP Asset not found. Ensure you used the right IP ID');
->>>>>>> b855bf92b338fde76d22c70714a1e4a5e1af12fb
     } finally {
       setIsLoading(false);
     }
@@ -132,32 +120,7 @@ const Onchain_IP_History = () => {
 
         {/* Asset Data Display */}
         {!isLoading && assetData && (
-<<<<<<< HEAD
-          <div className="space-y-6 animate-fadeIn max-w-6xl mx-auto">
-            {/* Metadata Card - Reduced Width */}
-            <div className='flex w-full gap-6'>
-            <MetadataCard metadata={assetData.metadata} tokenOwner={assetData.tokenOwner} isIPDisputed={assetData.isIPDisputed}  />
-            <LicenseCard license={mockIPAssets["IP-001"].license}  />
-            </div>
-
-            {/* Tips Table */}
-            <TipsTable 
-              tips={assetData.tips} 
-              currentPage={tipsPage}
-              setCurrentPage={setTipsPage}
-              paginatedTips={paginateData(assetData.tips, tipsPage)}
-              totalPages={totalPages(assetData.tips)}
-            />
-
-            {/* Revenue Claims Table */}
-            {/* <RevenueClaimsTable 
-              claims={assetData.revenueClaims}
-              currentPage={revenueClaimsPage}
-              setCurrentPage={setRevenueClaimsPage}
-              paginatedClaims={paginateData(assetData.revenueClaims, revenueClaimsPage)}
-              totalPages={totalPages(assetData.revenueClaims)}
-            /> */}
-=======
+          console.log("assetData", assetData),
           <div className="space-y-6 animate-fadeIn">
             {/* Media Display and Relationship Stats Row */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -175,6 +138,14 @@ const Onchain_IP_History = () => {
               />
             </div>
 
+            {/* Tips and Revenue Claims Cards Row */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Tips Card */}
+              <TipsTable tips={assetData.tips} currentPage={tipsPage} setCurrentPage={setTipsPage} paginatedTips={paginateData(assetData.tips, tipsPage)} totalPages={totalPages(assetData.tips)} />
+              
+              {/* Revenue Claims Card */}
+              {/* <RevenueClaimsTable claims={assetData.revenueClaims} currentPage={revenueClaimsPage} setCurrentPage={setRevenueClaimsPage} paginatedClaims={paginateData(assetData.revenueClaims, revenueClaimsPage)} totalPages={totalPages(assetData.revenueClaims)} /> */}
+            </div>
             {/* Metadata and License Cards Row */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* Metadata Card */}
@@ -189,7 +160,6 @@ const Onchain_IP_History = () => {
                 />
               )}
             </div>
->>>>>>> b855bf92b338fde76d22c70714a1e4a5e1af12fb
           </div>
         )}
 
@@ -206,20 +176,6 @@ const Onchain_IP_History = () => {
   );
 };
 
-<<<<<<< HEAD
-// Metadata Card Component
-const MetadataCard = ({ metadata, tokenOwner, isIPDisputed }) => (
-  <div className="w-full bg-slate-800/50 backdrop-blur-sm rounded-xl p-8 border border-purple-500/20 shadow-xl hover:shadow-2xl hover:border-purple-500/30 transition-all">
-    <div className="flex items-center justify-between mb-6">
-      <div className='flex items-center gap-3'>
-        <Shield className="text-purple-400" size={28} />
-        <h3 className="text-2xl font-bold text-slate-200">Asset Metadata</h3>
-      </div>
-      {isIPDisputed &&
-        <span className={`px-4 py-2 rounded-full text-sm font-semibold border bg-red-500/20 text-red-400 border-red-500/30`}>
-          Disputed
-        </span>
-=======
 // Media Display Component
 const MediaDisplay = ({ nftMetadata, mediaLoading, setMediaLoading }) => {
   const [isPlaying, setIsPlaying] = useState(false);
@@ -236,46 +192,25 @@ const MediaDisplay = ({ nftMetadata, mediaLoading, setMediaLoading }) => {
     const handleClickOutside = (event) => {
       if (showMenu && !event.target.closest('.menu-container')) {
         setShowMenu(false);
->>>>>>> b855bf92b338fde76d22c70714a1e4a5e1af12fb
       }
     };
 
-<<<<<<< HEAD
-// License Card Component
-const LicenseCard = ({ license }) => (
-  <div className="w-full bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 border border-purple-500/20 shadow-lg hover:shadow-xl hover:border-purple-500/30 transition-all">
-    <div className="flex items-center gap-2 mb-6">
-      <Shield className="text-purple-400" size={24} />
-      <h3 className="text-xl font-bold text-slate-200">License Details</h3>
-    </div>
-    <div className="space-y-4">
-      <InfoRow label="License Type" value={license.licenseType} />
-      <InfoRow 
-        label="Status" 
-        value={license.licenseStatus} 
-        badge 
-        badgeColor={license.licenseStatus === 'Active' ? 'green' : 'red'}
-      />
-      <InfoRow label="Expires" value={license.expirationDate} icon={<Calendar size={16} />} />
-      <InfoRow label="Territory" value={license.territory} />
-      <InfoRow label="Terms" value={license.terms} fullWidth />
-      <InfoRow label="Royalty Rate" value={license.royaltyRate} highlight />
-    </div>
-  </div>
-);
-=======
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [showMenu]);
->>>>>>> b855bf92b338fde76d22c70714a1e4a5e1af12fb
 
   // Extract media info from nftMetadata
   const getMediaInfo = () => {
-    if (!nftMetadata) return { url: null, type: null };
+    if (!nftMetadata) 
+    {
+      setMediaLoading(false);
+      return { url: null, type: null };
+    }
 
     // Priority 1: Check animation field (for video/audio) - prefer cachedUrl over originalUrl
     if (nftMetadata.animation?.contentType) {
       const url = nftMetadata.animation.cachedUrl || nftMetadata.animation.originalUrl;
+      setMediaLoading(false);
       if (url) {
         return {
           url: url,
@@ -287,6 +222,7 @@ const LicenseCard = ({ license }) => (
     // Priority 2: Check image field (for images) - prefer cachedUrl over originalUrl
     if (nftMetadata.image?.contentType) {
       const url = nftMetadata.image.cachedUrl || nftMetadata.image.originalUrl;
+      setMediaLoading(false);
       if (url) {
         return {
           url: url,
@@ -297,6 +233,7 @@ const LicenseCard = ({ license }) => (
 
     // Priority 3: Fallback to raw.metadata.mediaUrl (video/audio fallback)
     if (nftMetadata.raw?.metadata?.mediaUrl && nftMetadata.raw?.metadata?.mediaType) {
+      setMediaLoading(false);
       return {
         url: nftMetadata.raw.metadata.mediaUrl,
         type: nftMetadata.raw.metadata.mediaType
@@ -309,6 +246,8 @@ const LicenseCard = ({ license }) => (
       const url = nftMetadata.raw.metadata.animation_url.startsWith('ipfs://')
         ? nftMetadata.raw.metadata.animation_url.replace('ipfs://', 'https://ipfs.io/ipfs/')
         : nftMetadata.raw.metadata.animation_url;
+      setMediaLoading(false);
+
       return {
         url: url,
         type: nftMetadata.raw.metadata.mediaType
@@ -321,6 +260,8 @@ const LicenseCard = ({ license }) => (
       const url = nftMetadata.raw.metadata.image.startsWith('ipfs://')
         ? nftMetadata.raw.metadata.image.replace('ipfs://', 'https://ipfs.io/ipfs/')
         : nftMetadata.raw.metadata.image;
+      setMediaLoading(false);
+
       return {
         url: url,
         type: nftMetadata.raw.metadata.mediaType
@@ -328,12 +269,12 @@ const LicenseCard = ({ license }) => (
     }
 
     // No media available
+    setMediaLoading(false);
     return { url: null, type: null };
   };
 
   const { url: originalURL, type: contentType } = getMediaInfo();
 
-  setMediaLoading(false);
 
   const renderMedia = () => {
     if (!originalURL) {
@@ -784,7 +725,6 @@ const MetadataCard = ({ assetData }) => {
   );
 };
 
-<<<<<<< HEAD
 // Tips Table Component
 const TipsTable = ({ tips, currentPage, setCurrentPage, paginatedTips, totalPages }) => (
   <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 border border-purple-500/20 shadow-lg">
@@ -846,12 +786,13 @@ const TipsTable = ({ tips, currentPage, setCurrentPage, paginatedTips, totalPage
     </div>
 
     {/* Pagination */}
-    <Pagination 
+    {/* <Pagination 
       currentPage={currentPage}
       totalPages={totalPages}
       onPageChange={setCurrentPage}
+      stats={stats}
       totalItems={tips.length}
-    />
+    /> */}
   </div>
 );
 
@@ -929,16 +870,6 @@ const Pagination = ({ currentPage, totalPages, onPageChange, totalItems }) => {
   const itemsPerPage = 5;
   const startItem = (currentPage - 1) * itemsPerPage + 1;
   const endItem = Math.min(currentPage * itemsPerPage, totalItems);
-=======
-// Relationship Stats Component
-const RelationshipStats = ({ parentsCount, ancestorsCount, childrenCount, descendantsCount, isInGroup }) => {
-  const stats = [
-    { label: 'Parents', value: parentsCount ?? 0, icon: <Users size={20} />, color: 'text-blue-400' },
-    { label: 'Ancestors', value: ancestorsCount ?? 0, icon: <GitBranch size={20} />, color: 'text-purple-400' },
-    { label: 'Children', value: childrenCount ?? 0, icon: <Network size={20} />, color: 'text-green-400' },
-    { label: 'Descendants', value: descendantsCount ?? 0, icon: <GitBranch size={20} className="rotate-180" />, color: 'text-pink-400' },
-  ];
->>>>>>> b855bf92b338fde76d22c70714a1e4a5e1af12fb
 
   return (
     <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 border border-purple-500/20 shadow-xl hover:shadow-2xl hover:border-purple-500/30 transition-all">
