@@ -283,7 +283,6 @@ app.post('/api/validate', handleFileUpload, async (req, res) => {
 
     const manifestStore = reader.json();
 
-    console.log("manifestStore", manifestStore);
 
     const validation = {
       isValid: true,
@@ -302,9 +301,11 @@ app.post('/api/validate', handleFileUpload, async (req, res) => {
     // Get active manifest info from the manifest store instead of getActive()
     const activeManifestLabel = manifestStore.active_manifest;
     let manifestInfo = null;
+    let activeManifestInfo = null;
     
     if (activeManifestLabel && manifestStore.manifests) {
       const activeManifest = manifestStore.manifests[activeManifestLabel];
+      activeManifestInfo = activeManifest;
       if (activeManifest) {
         manifestInfo = {
           title: activeManifest.title,
@@ -315,12 +316,14 @@ app.post('/api/validate', handleFileUpload, async (req, res) => {
         };
       }
     }
+    
 
     await fs.unlink(tempPath);
 
     res.json({
       success: true,
       validation,
+      activeManifest: activeManifestInfo,
       manifest: manifestInfo || {
         title: 'Unknown',
         claimGenerator: 'Unknown',
