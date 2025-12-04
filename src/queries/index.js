@@ -1,7 +1,10 @@
 import { GraphQLClient, gql } from "graphql-request";
 import { ethers } from "ethers";
-import { DisputeContract, RPC_URL } from "../utils";
+import { DisputeContract, LicenseContractAddr, RPC_URL } from "../utils";
 import { disputeABI } from "../abi/dispute_abi";
+// import { LICENCE_ABI  } from "../abi/licence_abi";
+// import {License_Token_ABI} from "../abi/license_token_abi"
+
 
 const client = new GraphQLClient(import.meta.env.VITE_GOLDSKY_URL);
 const tipsClient = new GraphQLClient(import.meta.env.VITE_IPTIP_GOLDSKY_URL);
