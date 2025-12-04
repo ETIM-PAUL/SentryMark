@@ -1,19 +1,26 @@
-import { Scale, Search, AlertTriangle, CheckCircle, XCircle, Gavel, FileText, Clock, Shield, TrendingUp, X, File } from 'lucide-react';
+import { Scale, Search, AlertTriangle, CheckCircle, XCircle, Gavel, FileText, Clock, Shield, TrendingUp, X, File, FlagTriangleRight } from 'lucide-react';
 import React, { useEffect, useState, useRef } from 'react';
 import Header from '../components/header';
 import toast, { Toaster } from 'react-hot-toast';
 import { SkeletonCard, SkeletonLine } from '../components/SkeletonLoader';
 import { BrowserProvider, ethers, parseEther } from "ethers";
 import { disputeABI } from '../abi/dispute_abi';
-import { createStoryClientWithWallet, DisputeContract, formatDate, RPC_URL, secondsFromNow, uploadFileToIPFS, uploadTextToIPFS } from '../utils';
+import { createStoryClientWithWallet, DisputeContract, formatDate, isDisputed, RPC_URL, secondsFromNow, uploadFileToIPFS, uploadTextToIPFS } from '../utils';
 import { ConnectKitButton, ConnectKitProvider } from 'connectkit';
 import { http, useConnection } from 'wagmi';
 import { DisputeTargetTag, StoryClient } from '@story-protocol/core-sdk'
 import { storyAeneid } from 'viem/chains';
+import { fetchDisputeDetails } from '../queries';
+import { RaiseDisputeModal } from '../components/RaiseDisputeModal';
+import { ResolveDisputeModal } from '../components/ResolveDisputeModal';
+import { AssertDisputeModal } from '../components/AssertDisputeModal';
+import { CancelDisputeModal } from '../components/CancelDisputeModal';
+import { SetJudgementModal } from '../components/SetJudgementModal';
 
 
 const Dispute_Management = () => {
-  const [disputeId, setDisputeId] = useState('');
+  const [disputeId, setDisputeId] = useState(null);
+  const [targetIp, setTargetIp] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [disputeData, setDisputeData] = useState(null);
@@ -23,8 +30,10 @@ const Dispute_Management = () => {
   const [showResolveModal, setShowResolveModal] = useState(false);
   const [showRaiseModal, setShowRaiseModal] = useState(false);
   const [showJudgementModal, setShowJudgementModal] = useState(false);
+  const [showAssertModal, setShowAssertModal] = useState(false);
   const [showCancelModal, setShowCancelModal] = useState(false);
   const evidenceInputRef = useRef(null);
+  const counterDisputeInputRef = useRef(null);
 
   const { address } = useConnection()
 
@@ -41,6 +50,15 @@ const Dispute_Management = () => {
     evidenceText: '',
     evidenceFile: '',
     liveness: ''
+  });
+
+  //argue dispute
+  const [assertForm, setAssertForm] = useState({
+    targetIpId: '',
+    disputeEvidenceHash: '',
+    selectedEvidenceType: 'text',
+    evidenceText: '',
+    evidenceFile: '',
   });
 
   // Judgement Modal Form
@@ -79,40 +97,18 @@ const Dispute_Management = () => {
 
     setIsLoading(true);
     setDisputeData(null);
+    const details = await fetchDisputeDetails(disputeId)
 
-      let provider = new ethers.JsonRpcProvider(RPC_URL)
-      const contract = new ethers.Contract(DisputeContract, disputeABI, provider)
-
-      let formattedResponse;
-
-      contract.disputes(Number(disputeId)).then(async(res) => 
-        {
-        formattedResponse = {
-         targetIpId: res[0],
-         disputeInitiator: res[1],
-         disputeTimestamp: Number(res[2]),
-         arbitrationPolicy: res[3],
-         disputeEvidenceHash: res[4],
-         targetTag: res[5],
-         currentTag: res[6],
-         infringerDisputeId: Number(res[7]),
-         status: Number(res[7]) > 0 ? 'Judged' : 'Pending Judgement'
-       };
-       setTimeout(() => {
-        console.log(formattedResponse)
-        if (formattedResponse.targetIpId === "0x0000000000000000000000000000000000000000") {
-          toast.error("No Dispute found with this ID");
-          setIsLoading(false);
-          return;
-        }
-        // contract.isIpTagged(formattedResponse.targetIpId).then((res) => {
-        //   formattedResponse.isIpTagged = res;
-        // })
-        setDisputeData(formattedResponse);
-        setIsLoading(false);
-        toast.success('Dispute data loaded successfully!');
-       }, 2000);
-      })
+      setTimeout(() => {
+       if (details === undefined) {
+         toast.error("No Dispute found with this ID");
+         setIsLoading(false);
+         return;
+       }
+       setDisputeData(details);
+       setIsLoading(false);
+       toast.success('Dispute data loaded successfully!');
+      }, 2000);
   };
 
   const handleKeyPress = (e) => {
@@ -168,7 +164,7 @@ const Dispute_Management = () => {
     setIsSubmitting(false);
     setRaiseForm({ targetIpId: '', disputeEvidenceHash: '', targetTag: 'IMPROPER_REGISTRATION', data: '' });
     setTotalDisputes(prev => prev + 1);
-    toast.success(`Dispute raised successfully!`);
+    toast.success(`Dispute raised successfully with dispute ID: ${disputeResponse.disputeId}`);
     } catch (error) {
       toast.error(error.message);
       console.error(error);
@@ -199,6 +195,45 @@ const Dispute_Management = () => {
       setShowJudgementModal(false);
       setJudgementForm({ disputeId: '', decision: true, data: '' });
     } catch (error) {
+      const msg = error?.message || "";
+      const extracted = msg.split("\n").find(line => line.startsWith("Error:"));
+      console.error(extracted || "Unknown error");
+      toast.error(extracted || "Unknown error");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+  
+
+  const handleAssertDispute = async () => {
+    if (!address) {
+      toast.error('Please connect your wallet');
+      return;
+    }
+    if ((assertForm.selectedEvidenceType === "file" && !assertForm.evidenceFile) || (!assertForm.selectedEvidenceType === "text" && !assertForm.evidenceText)) {
+      toast.error('Please upload or enter evidence');
+      return;
+    }
+    
+    try {
+      setIsSubmitting(true);
+      const { storyClient } = await createStoryClientWithWallet()
+    const counterEvidenceCID = assertForm.selectedEvidenceType === "file" ? await uploadFileToIPFS(assertForm.evidenceFile) : await uploadTextToIPFS(assertForm.evidenceText)
+    
+    const assertionId = await storyClient.dispute.disputeIdToAssertionId(Number(disputeData.id));
+    console.log(disputeData);
+      const assertDispute = await storyClient.dispute.disputeIdToAssertionId({
+        ipId: disputeData.targetIpId,
+        assertionId: assertionId,
+        counterEvidenceCID: counterEvidenceCID,
+    });
+
+      toast.success(`Dispute asserted successfully!`);
+      setShowAssertModal(false);
+      setAssertForm({ targetIpId: '', disputeId: '', selectedEvidenceType: 'text', evidenceText: '', evidenceFile: '' });
+    } catch (error) {
+      console.log(error);
+      
       const msg = error?.message || "";
       const extracted = msg.split("\n").find(line => line.startsWith("Error:"));
       console.error(extracted || "Unknown error");
@@ -239,6 +274,9 @@ const Dispute_Management = () => {
     const file = e.target.files[0];
     if (file) {
       setRaiseForm({...raiseForm, evidenceFile:file});
+    }
+    if (file && showAssertModal) {
+      setAssertForm({...assertForm, evidenceFile:file});
     }
   };
 
@@ -309,7 +347,7 @@ const Dispute_Management = () => {
                 />
                 <button
                   onClick={handleFetchDispute}
-                  disabled={isLoading || !disputeId.trim()}
+                  disabled={isLoading || !disputeId}
                   className="bg-linear-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 disabled:from-slate-600 disabled:to-slate-700 text-white px-8 py-3 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 shadow-lg hover:shadow-purple-500/20 disabled:cursor-not-allowed"
                 >
                   <Search size={20} />
@@ -345,9 +383,21 @@ const Dispute_Management = () => {
                   setJudgementForm({ ...judgementForm, disputeId: disputeId });
                   setShowJudgementModal(true);
                 }}
+                onCounterDispute={() => {
+                  if (address === undefined) {
+                    toast.error("Please connect your wallet");
+                    return;
+                  }
+                  setAssertForm({ ...assertForm, targetIpId: disputeData.targetIpId, disputeId: disputeId });
+                  setShowAssertModal(true);
+                }}
                 onCancel={() => {
                   if (address === undefined) {
                     toast.error("Please connect your wallet");
+                    return;
+                  }
+                  if (disputeData.initiator.toLowerCase() !== address.toLowerCase()) {
+                    toast.error("Not Dispute Initiator");
                     return;
                   }
                   setCancelForm({ ...cancelForm, disputeId: disputeId });
@@ -368,7 +418,7 @@ const Dispute_Management = () => {
         </div>
 
         {/* Modals */}
-        <ResolveDisputeModal 
+        <ResolveDisputeModal
           show={showResolveModal}
           onClose={() => setShowResolveModal(false)}
           form={resolveForm}
@@ -387,10 +437,21 @@ const Dispute_Management = () => {
           targetTagOptions={targetTagOptions}
           evidenceInputRef={evidenceInputRef}
           handleFileUpload={handleFileUpload}
+          
+          />
 
+        <AssertDisputeModal
+          show={showAssertModal}
+          isSubmitting={isSubmitting}
+          onClose={() => setShowAssertModal(false)}
+          form={assertForm}
+          setForm={setAssertForm}
+          onSubmit={handleAssertDispute}
+          evidenceInputRef={counterDisputeInputRef}
+          handleFileUpload={handleFileUpload}
         />
 
-        <SetJudgementModal 
+        <SetJudgementModal
           show={showJudgementModal}
           onClose={() => setShowJudgementModal(false)}
           form={judgementForm}
@@ -399,13 +460,14 @@ const Dispute_Management = () => {
           onSubmit={handleSetJudgement}
         />
 
-        <CancelDisputeModal 
+        <CancelDisputeModal
           show={showCancelModal}
           onClose={() => setShowCancelModal(false)}
           form={cancelForm}
           setForm={setCancelForm}
           isSubmitting={isSubmitting}
           onSubmit={handleCancelDispute}
+          
         />
       </div>
     </ConnectKitProvider>
@@ -413,7 +475,7 @@ const Dispute_Management = () => {
 };
 
 // Dispute Card Component
-const DisputeCard = ({ disputeData, address, onResolve, onSetJudgement, onCancel }) => {
+const DisputeCard = ({ disputeData, address, onResolve, onSetJudgement, onCounterDispute, onCancel }) => {
   // const isPending = disputeData.status === 'Pending Judgement';
   
   return (
@@ -439,8 +501,8 @@ const DisputeCard = ({ disputeData, address, onResolve, onSetJudgement, onCancel
           <InfoRow 
             label="Dispute Initiator" 
             showFullState={true}
-            value={disputeData.disputeInitiator}
-            fullValue={disputeData.disputeInitiator}
+            value={disputeData.initiator}
+            fullValue={disputeData.initiator}
             icon={<AlertTriangle size={16} />}
           />
           <InfoRow 
@@ -463,8 +525,8 @@ const DisputeCard = ({ disputeData, address, onResolve, onSetJudgement, onCancel
           <InfoRow 
             label="Evidence Hash" 
             showFullState={true}
-            value={disputeData.disputeEvidenceHash}
-            fullValue={disputeData.disputeEvidenceHash}
+            value={disputeData.evidenceHash}
+            fullValue={disputeData.evidenceHash}
             icon={<FileText size={16} />}
             mono
           />
@@ -488,7 +550,19 @@ const DisputeCard = ({ disputeData, address, onResolve, onSetJudgement, onCancel
       </div>
 
       {/* Action Buttons - Only show if status is Pending */}
-      {Buffer.from(disputeData.currentTag.replace(/^0x/, ""), "hex").toString("ascii").replace(/\0+$/, "") === "IN_DISPUTE" && (
+      {disputeData.status === "resolved" && (
+        <div className="border-t border-purple-500/20 pt-6">
+          <div className="bg-purple-500/10 border border-purple-500/20 rounded-lg p-4 mb-4">
+            <p className="text-purple-300 text-sm font-medium flex items-center gap-2">
+              <TrendingUp size={16} />
+              This dispute has been resolved.
+            </p>
+          </div>
+        </div>
+      )}
+      
+
+      {isDisputed(disputeData.currentTag) === "" && (
         <div className="border-t border-purple-500/20 pt-6">
           <div className="bg-purple-500/10 border border-purple-500/20 rounded-lg p-4 mb-4">
             <p className="text-purple-300 text-sm font-medium flex items-center gap-2">
@@ -499,11 +573,11 @@ const DisputeCard = ({ disputeData, address, onResolve, onSetJudgement, onCancel
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <button
-              onClick={onSetJudgement}
+              onClick={onCounterDispute}
               className="bg-linear-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white py-3 px-6 rounded-lg font-semibold transition-all shadow-lg hover:shadow-blue-500/30 flex items-center justify-center gap-2"
             >
-              <Gavel size={20} />
-              Set Judgement
+              <FlagTriangleRight size={20} />
+              Counter Dispute
             </button>
             
             <button
@@ -518,16 +592,13 @@ const DisputeCard = ({ disputeData, address, onResolve, onSetJudgement, onCancel
       )}
 
       {/* Message for non-pending disputes */}
-      {(Buffer.from(disputeData.currentTag.replace(/^0x/, ""), "hex").toString("ascii").replace(/\0+$/, "") !== "" 
-        && 
-        Buffer.from(disputeData.currentTag.replace(/^0x/, ""), "hex").toString("ascii").replace(/\0+$/, "") !== "IN_DISPUTE"
-      )
+      {(disputeData.status === "infringing")
 
        && (
         <div className="border-t border-purple-500/20 pt-6">
           <div className="bg-slate-900/50 border border-slate-700/50 rounded-lg p-4 text-center">
             <p className="text-slate-400 text-sm">
-              This dispute has been <span className="font-semibold text-slate-300">{disputeData.status.toLowerCase()}</span> and only action is to resolve it.
+              This dispute status is <span className="font-semibold text-slate-300">infringed</span> and only action is to resolve it.
             </p>
           </div>
 
@@ -657,300 +728,5 @@ const DisputeLoadingSkeleton = () => (
   </div>
 );
 
-// Modal Components
-const Modal = ({ show, onClose, title, children, icon: Icon }) => {
-  if (!show) return null;
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fadeIn">
-      <div className="bg-slate-800 rounded-2xl border border-purple-500/30 shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-        <div className="sticky top-0 bg-slate-800 border-b border-purple-500/20 p-6 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            {Icon && <Icon className="text-purple-400" size={24} />}
-            <h2 className="text-2xl font-bold text-slate-200">{title}</h2>
-          </div>
-          <button
-            onClick={onClose}
-            className="text-slate-400 hover:text-slate-200 transition-colors"
-          >
-            <X size={24} />
-          </button>
-        </div>
-        <div className="p-6">
-          {children}
-        </div>
-      </div>
-    </div>
-  );
-};
-
-const ResolveDisputeModal = ({ show, onClose, form, setForm, isSubmitting, onSubmit }) => (
-  <Modal show={show} onClose={onClose} title="Resolve Dispute" icon={CheckCircle}>
-    <div className="space-y-4">
-      <div>
-        <label className="block text-slate-300 font-medium mb-2">Dispute ID</label>
-        <input
-          type="text"
-          value={form.disputeId}
-          disabled={true}
-          onChange={(e) => setForm({ ...form, disputeId: e.target.value })}
-          placeholder="Enter dispute ID"
-          className="w-full disabled:cursor-not-allowed bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-3 text-slate-200 placeholder-slate-500 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20"
-        />
-      </div>
-      <div>
-        <label className="block text-slate-300 font-medium mb-2">Data (optional)</label>
-        <textarea
-          value={form.data}
-          onChange={(e) => setForm({ ...form, data: e.target.value })}
-          placeholder="Fill out your data here."
-          rows={4}
-          className="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-3 text-slate-200 placeholder-slate-500 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 font-mono text-sm"
-        />
-      </div>
-      <button
-        onClick={onSubmit}
-        disabled={isSubmitting}
-        className="cursor-pointer w-full disabled:opacity-50 disabled:cursor-not-allowed bg-linear-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white py-3 rounded-lg font-semibold transition-all shadow-lg"
-      >
-        {isSubmitting ? 'Processing...' : 'Confirm Resolution'}
-      </button>
-    </div>
-  </Modal>
-);
-
-const RaiseDisputeModal = ({ show, onClose, form, setForm, isSubmitting, onSubmit, targetTagOptions, evidenceInputRef, handleFileUpload }) => (
-  <Modal show={show} onClose={onClose} title="Raise New Dispute" icon={AlertTriangle}>
-    <div className="space-y-4">
-      <div>
-        <label className="block text-slate-300 font-medium">Target IP ID</label>
-        <span className='text-red-500 text-xs'>The IP ID that is the target of the dispute</span>
-        <input
-          type="text"
-          value={form.targetIpId}
-          onChange={(e) => setForm({ ...form, targetIpId: e.target.value })}
-          placeholder="0x..."
-          className="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-3 text-slate-200 placeholder-slate-500 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 font-mono"
-        />
-      </div>
-      <div>
-        <label className="block text-slate-300 font-medium">Tag</label>
-        <span className='text-red-500 text-xs'>The target tag of the dispute</span>
-        <select
-          value={form.targetTag}
-          onChange={(e) => setForm({ ...form, targetTag: e.target.value })}
-          className="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-3 text-slate-200 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20"
-        >
-          {targetTagOptions.map((option) => (
-            <option key={option.value} value={option.value}>
-              {option.label}
-            </option>
-          ))}
-        </select>
-      </div>
-      <div>
-        <label className="block text-slate-300 font-medium ">Bond (Optional)</label>
-        <span className='text-red-500 text-xs'>The amount of wrapper IP that the dispute initiator pays upfront into a pool. To counter that dispute the opposite party of the dispute has to place a bond of the same amount. The winner of the dispute gets the original bond back + 50% of the other party bond. The remaining 50% of the loser party bond goes to the reviewer.</span>
-        <input
-          type="text"
-          value={form.bond}
-          onChange={(e) => setForm({ ...form, bond: e.target.value })}
-          placeholder="Amount of IP Token to bond your dispute"
-          className="w-full mt-1 bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-3 text-slate-200 placeholder-slate-500 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 font-mono"
-        />
-      </div>
-
-      <div>
-        <label className="block text-slate-300 font-medium">Evidence Type</label>
-        <span className='text-red-500 text-xs'>Select type for uploading your dispute evidence (documents, images, etc.)</span>
-        <select
-          value={form.selectedEvidenceType}
-          defaultValue="text"
-          onChange={(e) => setForm({ ...form, selectedEvidenceType: e.target.value })}
-          className="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-3 text-slate-200 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20"
-        >
-            <option  value="select" disabled>
-              --Please select type--
-            </option>
-            <option value="file">
-              File (Image, Audio, Document, Video)
-            </option>
-            <option value="text">
-              Text (Written Text)
-            </option>
-        </select>
-      </div>
-
-      {form.selectedEvidenceType === "file"  &&
-      <div>
-          <input
-          ref={evidenceInputRef}
-          type="file"
-          accept="*"
-          onChange={handleFileUpload}
-          className="hidden"
-          />
-        <div
-          onClick={() => evidenceInputRef.current?.click()}
-          className="border-2 border-dashed border-purple-700/50 rounded-xl p-16 mb-6 text-center hover:border-purple-600/70 transition-colors cursor-pointer"
-          >
-          {form.evidenceFile ? (
-            <div className="space-y-4">
-              <File className="w-12 h-12 text-green-400 mx-auto" />
-              <p className="text-purple-200 text-lg">{form.evidenceFile.name.slice(0,5)+ (" ")+ form.evidenceFile.name.slice(80,form.evidenceFile.name.length-1)}</p>
-              <p className="text-purple-400 text-sm">Click to change file</p>
-            </div>
-          ) : (
-            <>
-              <File className="w-12 h-12 text-purple-400 mx-auto mb-4" />
-              <p className="text-purple-200 text-lg mb-2">Click to upload evidence file</p>
-              <p className="text-purple-400 text-sm">documents, images, videos, etc.</p>
-            </>
-          )}
-        </div>
-      </div>
-      }
-      {form.selectedEvidenceType === "text"  &&
-      <div>
-        <label className="block text-slate-300 font-medium">Text Evidence</label>
-        <textarea
-          type="text"
-          value={form.evidenceText}
-          onChange={(e) => setForm({ ...form, evidenceText: e.target.value })}
-          placeholder="Fill out your evidence here."
-          className="w-full mt-1 bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-3 text-slate-200 placeholder-slate-500 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 font-mono"
-        />
-      </div>
-      }
-
-      <div>
-        <label className="block text-slate-300 font-medium ">Liveness</label>
-        <span className='text-red-500 text-xs'>The liveness is the time window (in seconds) in which a counter dispute can be presented.</span>
-        <input
-          type="datetime-local"
-          value={form.liveness}
-          onChange={(e) => setForm({ ...form, liveness: e.target.value })}
-          placeholder=""
-          className="w-full mt-1 bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-3 text-slate-200 placeholder-slate-500 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 font-mono"
-        />
-      </div>
-
-      <button
-        onClick={onSubmit}
-        disabled={isSubmitting}
-        className="w-full disabled:opacity-50 disabled:cursor-not-allowed bg-linear-to-r from-yellow-600 to-yellow-500 hover:from-yellow-700 hover:to-yellow-600 text-white py-3 rounded-lg font-semibold transition-all shadow-lg"
-      >
-        {isSubmitting ? 'Processing...' : 'Raise Dispute'}
-      </button>
-    </div>
-  </Modal>
-);
-
-const SetJudgementModal = ({ show, onClose, form, setForm, isSubmitting, onSubmit }) => (
-  <Modal show={show} onClose={onClose} title="Set Dispute Judgement" icon={Gavel}>
-    <div className="space-y-4">
-      <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-4">
-        <p className="text-red-300 text-sm">
-          ⚠️ The setDisputeJudgement can only be called by whitelisted addresses and allows the caller to set the dispute judgment. Can only be called once as dispute decisions are immutable. If 3rd parties want to offer the possibility for recourse they can do so on their end and relay the final judgment.
-        </p>
-      </div>
-      <div>
-        <label className="block text-slate-300 font-medium mb-2">Dispute ID</label>
-        <input
-          type="text"
-          value={form.disputeId}
-          disabled={true}
-          onChange={(e) => setForm({ ...form, disputeId: e.target.value })}
-          placeholder="Enter dispute ID"
-          className="w-full disabled:cursor-not-allowed bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-3 text-slate-200 placeholder-slate-500 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20"
-        />
-      </div>
-      <div>
-        <label className="block text-slate-300 font-medium mb-2">Decision</label>
-        <div className="flex gap-4">
-          <button
-            onClick={() => setForm({ ...form, decision: true })}
-            className={`flex-1 py-3 rounded-lg font-semibold transition-all ${
-              form.decision
-                ? 'bg-green-600 text-white'
-                : 'bg-slate-700/50 text-slate-300 hover:bg-slate-700'
-            }`}
-          >
-            <CheckCircle className="inline-block mr-2" size={18} />
-            Approve
-          </button>
-          <button
-            onClick={() => setForm({ ...form, decision: false })}
-            className={`flex-1 py-3 rounded-lg font-semibold transition-all ${
-              !form.decision
-                ? 'bg-red-600 text-white'
-                : 'bg-slate-700/50 text-slate-300 hover:bg-slate-700'
-            }`}
-          >
-            <XCircle className="inline-block mr-2" size={18} />
-            Reject
-          </button>
-        </div>
-      </div>
-      <div>
-        <label className="block text-slate-300 font-medium mb-2">Data (optional)</label>
-        <textarea
-          value={form.data}
-          onChange={(e) => setForm({ ...form, data: e.target.value })}
-          placeholder="Fill out your data here."
-          rows={4}
-          className="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-3 text-slate-200 placeholder-slate-500 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 font-mono text-sm"
-        />
-      </div>
-      <button
-        onClick={onSubmit}
-        disabled={isSubmitting}
-        className="cursor-pointer w-full disabled:opacity-50 disabled:cursor-not-allowed bg-linear-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white py-3 rounded-lg font-semibold transition-all shadow-lg"
-      >
-        {isSubmitting ? 'Processing...' : 'Set Judgement'}
-      </button>
-    </div>
-  </Modal>
-);
-
-const CancelDisputeModal = ({ show, onClose, form, setForm, isSubmitting, onSubmit }) => (
-  <Modal show={show} onClose={onClose} title="Cancel Dispute" icon={XCircle}>
-    <div className="space-y-4">
-      <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-4">
-        <p className="text-red-300 text-sm">
-          ⚠️ Currently, the UMA Arbitration Policy does not support cancelling disputes.
-        </p>
-      </div>
-      <div>
-        <label className="block text-slate-300 font-medium mb-2">Dispute ID</label>
-        <input
-          type="text"
-          value={form.disputeId}
-          disabled={true}
-          onChange={(e) => setForm({ ...form, disputeId: e.target.value })}
-          placeholder="Enter dispute ID"
-          className="w-full disabled:cursor-not-allowed bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-3 text-slate-200 placeholder-slate-500 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20"
-        />
-      </div>
-      <div>
-        <label className="block text-slate-300 font-medium mb-2">Data (optional)</label>
-        <textarea
-          value={form.data}
-          onChange={(e) => setForm({ ...form, data: e.target.value })}
-          placeholder="Fill out your data here."
-          rows={4}
-          className="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-3 text-slate-200 placeholder-slate-500 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 font-mono text-sm"
-        />
-      </div>
-      <button
-        onClick={onSubmit}
-        // disabled={true}
-        className="w-full disabled:opacity-50 disabled:cursor-not-allowed bg-linear-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white py-3 rounded-lg font-semibold transition-all shadow-lg"
-      >
-        {isSubmitting ? 'Processing...' : 'Cancel Dispute'}
-      </button>
-    </div>
-  </Modal>
-);
 
 export default Dispute_Management;

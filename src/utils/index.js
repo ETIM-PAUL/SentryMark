@@ -105,14 +105,8 @@ export async function getTokenMetadata(tokenAddress) {
 }
 
 
-async function isFunctionSupported(address, signature) {
-  try {
-    await client.call({
-      to: address,
-      data: signature,
-    });
-    return true;
-  } catch {
-    return false;
-  }
+export function isDisputed(tag) {
+  if (!tag) return "";
+  const clean = tag.replace(/^0x/, "");
+  return Buffer.from(clean, "hex").toString("ascii").replace(/\0+$/, "");
 }
