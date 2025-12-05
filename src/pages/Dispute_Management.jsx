@@ -7,7 +7,7 @@ import { BrowserProvider, ethers, parseEther } from "ethers";
 import { disputeABI } from '../abi/dispute_abi';
 import { createStoryClientWithWallet, DisputeContract, formatDate, isDisputed, RPC_URL, secondsFromNow, uploadFileToIPFS, uploadTextToIPFS } from '../utils';
 import { ConnectKitButton, ConnectKitProvider } from 'connectkit';
-import { http, useConnection } from 'wagmi';
+import { http, useAccount } from 'wagmi';
 import { DisputeTargetTag, StoryClient } from '@story-protocol/core-sdk'
 import { storyAeneid } from 'viem/chains';
 import { fetchDisputeDetails } from '../queries';
@@ -35,7 +35,7 @@ const Dispute_Management = () => {
   const evidenceInputRef = useRef(null);
   const counterDisputeInputRef = useRef(null);
 
-  const { address } = useConnection()
+  const { address } = useAccount()
 
   // Resolve Modal Form
   const [resolveForm, setResolveForm] = useState({ disputeId: '', data: '' });

@@ -13,18 +13,46 @@ export const DisputeContract = "0x9b7A9c70AFF961C799110954fc06F3093aeb94C5"
 export const RPC_URL = "https://rpc.ankr.com/story_aeneid_testnet"
 
 export const formatDate = (timestamp) => {
-const date = new Date(Number(timestamp) * 1000);
-const pretty = date.toLocaleString('en-US', {
-  month: 'long',
-  day: 'numeric',
-  year: 'numeric',
-  hour: 'numeric',
-  minute: 'numeric',
-  second: 'numeric',
-  hour12: true
-}); 
-return pretty;
-  };
+  // Handle different input formats
+  let date;
+  
+  if (!timestamp) {
+    return 'N/A';
+  }
+  
+  // If it's already a Date object
+  if (timestamp instanceof Date) {
+    date = timestamp;
+  }
+  // If it's an ISO string (contains 'T' or '-')
+  else if (typeof timestamp === 'string' && (timestamp.includes('T') || timestamp.includes('-'))) {
+    date = new Date(timestamp);
+  }
+  // If it's a Unix timestamp in seconds (less than 10000000000)
+  else if (Number(timestamp) < 10000000000) {
+    date = new Date(Number(timestamp) * 1000);
+  }
+  // If it's a Unix timestamp in milliseconds
+  else {
+    date = new Date(Number(timestamp));
+  }
+  
+  // Check if date is valid
+  if (isNaN(date.getTime())) {
+    return 'Invalid Date';
+  }
+  
+  const pretty = date.toLocaleString('en-US', {
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric',
+    hour: 'numeric',
+    minute: 'numeric',
+    second: 'numeric',
+    hour12: true
+  }); 
+  return pretty;
+};
 
   export async function uploadTextToIPFS(text) {
     const blob = new Blob([text], { type: "text/plain" });

@@ -8,6 +8,7 @@ import { mockIPAssets } from '../utils/mockData';
 import IPAssetLoadingSkeleton from '../components/SkeletonLoader';
 import { RelationshipStats } from '../components/RelationshipStats';
 import { fetchAPIdata } from '../queries/api_queries';
+import { formatUnits } from 'ethers';
 
 const Onchain_IP_History = () => {
   const [assetId, setAssetId] = useState('');
@@ -634,19 +635,18 @@ const MetadataCard = ({ assetData }) => {
 
   // Define all metadata fields
   const allFields = [
-    { label: 'IP ID', value: assetData.id, key: 'ipId' },
-    { label: 'Name', value: assetData.nftMetadata?.name, key: 'name' },
-    { label: 'Description', value: assetData.nftMetadata?.raw?.metadata?.description, key: 'description' },
-    { label: 'Created At', value: assetData.createdAt ? new Date(assetData.createdAt).toLocaleString() : 'N/A', key: 'createdAt' },
-    { label: 'Last Updated At', value: assetData.lastUpdatedAt ? new Date(assetData.lastUpdatedAt).toLocaleString() : 'N/A', key: 'lastUpdatedAt' },
-    { label: 'Total Supply', value: assetData.totalSupply || assetData.nftMetadata?.totalSupply, key: 'totalSupply' },
+    { label: 'IP ID', value: assetData.ipId || assetData.id, key: 'ipId' },
+    { label: 'Contract Address', value: assetData.tokenContract || assetData.nftMetadata?.contract_address, key: 'tokenContract' },
+    { label: 'Token ID', value: assetData.tokenId || assetData.nftMetadata?.tokenId, key: 'tokenId' },
+    { label: 'Total Supply', value: assetData.totalSupply, key: 'totalSupply' },
+    { label: 'Name', value: assetData.name || assetData.nftMetadata?.name, key: 'name' },
+    { label: 'Title', value: assetData.title, key: 'title' },
+    { label: 'Description', value: assetData.description || assetData.nftMetadata?.raw?.metadata?.description, key: 'description' },
+    { label: 'Registration Date', value: assetData.registrationDate ? formatDate(assetData.registrationDate) : 'N/A', key: 'registrationDate' },
+    { label: 'Created At', value: assetData.createdAt ? formatDate(assetData.createdAt) : 'N/A', key: 'createdAt' },
+    { label: 'Last Updated At', value: assetData.lastUpdatedAt ? formatDate(assetData.lastUpdatedAt) : 'N/A', key: 'lastUpdatedAt' },
     { label: 'Chain ID', value: assetData.chainId, key: 'chainId' },
-    { label: 'Token Contract', value: assetData.nftMetadata?.tokenContract, key: 'tokenContract' },
-    { label: 'Token ID', value: assetData.nftMetadata?.tokenId, key: 'tokenId' },
-    { label: 'Token Type', value: assetData.nftMetadata?.tokenType, key: 'tokenType' },
-    { label: 'Block Number', value: assetData.blockNumber, key: 'blockNumber' },
-    { label: 'Block Timestamp', value: assetData.blockTimestamp ? new Date(assetData.blockTimestamp).toLocaleString() : 'N/A', key: 'blockTimestamp' },
-    { label: 'Content Type', value: assetData.nftMetadata?.image?.contentType || assetData.nftMetadata?.animation?.contentType, key: 'contentType' },
+    { label: 'Owner Address', value: assetData.ownerAddress, key: 'ownerAddress' },
     { label: 'Creator', value: assetData.nftMetadata?.raw?.metadata?.creator, key: 'creator' },
   ];
 
@@ -962,19 +962,32 @@ const LicenseDetailsCard = ({ license, licenseCount }) => {
     );
   };
 
+  // Helper function to convert Wei to ETH
+  const formatMintingFee = (fee) => {
+    if (!fee || fee === '0' || fee === 0) return '0 IP';
+    const feeInEth = formatUnits(fee, 18);
+    return `${feeInEth} IP`;
+  };
+
+  // Helper function to format Commercial Rev Share
+  const formatCommercialRevShare = (value) => {
+    if (!value || value === '0' || value === 0) return '0%';
+    const formatted = Number(value) / 10000000; // Divide by 10e6
+    return `${formatted}%`;
+  };
+
   // Define all license fields (License Count is now first)
   const allFields = [
     { label: 'License Count', value: licenseCount, key: 'licenseCount' },
     { label: 'License Terms ID', value: license.licenseTermsId, key: 'termsId' },
     { label: 'License Template ID', value: license.licenseTemplateId, key: 'templateId' },
     { label: 'Template Name', value: license.templateName, key: 'templateName' },
-    { label: 'Currency', value: license.terms?.currency, key: 'currency' },
     { label: 'Royalty Policy', value: license.terms?.royaltyPolicy, key: 'royaltyPolicy' },
-    { label: 'Default Minting Fee', value: license.terms?.defaultMintingFee, key: 'mintingFee' },
-    { label: 'Commercial Rev Share', value: license.terms?.commercialRevShare ? `${license.terms.commercialRevShare}%` : '0%', key: 'commercialRevShare' },
+    { label: 'Default Minting Fee', value: formatMintingFee(license.terms?.defaultMintingFee), key: 'mintingFee' },
+    { label: 'Commercial Rev Share', value: formatCommercialRevShare(license.terms?.commercialRevShare), key: 'commercialRevShare' },
     { label: 'Commercial Rev Ceiling', value: license.terms?.commercialRevCeiling || '0', key: 'commercialRevCeiling' },
     { label: 'Derivative Rev Ceiling', value: license.terms?.derivativeRevCeiling || '0', key: 'derivativeRevCeiling' },
-    { label: 'Expiration', value: license.terms?.expiration || '0', key: 'expiration' },
+    { label: 'Expiration', value: (license.terms?.expiration === '0' || license.terms?.expiration === 0 || !license.terms?.expiration) ? 'Not Expired Yet' : 'Expired', key: 'expiration' },
   ];
 
   // Filter out fields with null/undefined values
@@ -992,11 +1005,9 @@ const LicenseDetailsCard = ({ license, licenseCount }) => {
       </div>
       
       <div className="space-y-3">
-        {fieldsToShow.map(field => renderField(field.label, field.value, field.key))}
-        
         {/* Boolean Fields - Always visible if terms exist */}
         {license.terms && showAllLicenseFields && (
-          <div className="grid grid-cols-2 gap-3 mt-4">
+          <div className="grid grid-cols-2 gap-3 mb-4">
             <BooleanField label="Transferable" value={license.terms.transferable} />
             <BooleanField label="Commercial Use" value={license.terms.commercialUse} />
             <BooleanField label="Derivatives Allowed" value={license.terms.derivativesAllowed} />
@@ -1006,6 +1017,8 @@ const LicenseDetailsCard = ({ license, licenseCount }) => {
             <BooleanField label="Derivatives Attribution" value={license.terms.derivativesAttribution} />
           </div>
         )}
+
+        {fieldsToShow.map(field => renderField(field.label, field.value, field.key))}
         
         {/* Show More/Less Button */}
         {hasMoreFields && (
