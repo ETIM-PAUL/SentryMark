@@ -76,7 +76,9 @@ const Onchain_IP_History = () => {
       const result = await analyzeVideoWithGoogleLens(assetData.nftMetadata.raw.metadata?.mediaUrl ?? assetData.nftMetadata.image.cachedUrl);
       assetUrl = result.ipfsUrl;
     } else {
-      toast.error("No media available");
+      toast.error("No support for this media type yet");
+      setTrackedAssetsLoading(false);
+      setShowTrackingModal(false);
       return;
     }
 
