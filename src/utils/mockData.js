@@ -262,19 +262,3 @@ export const mockIPAssets = {
   }
 };
 
-// Simulate API fetch delay
-export const fetchIPAssetData = (assetId) => {
-  return new Promise((resolve, reject) => {
-    setTimeout(() => {
-      const asset = mockIPAssets[assetId];
-      if (asset) {
-        resolve(asset);
-      } else {
-        reject(new Error('IP Asset not found'));
-      }
-    }, 5000); // 5 second delay
-  });
-};
-
-// Get list of all available asset IDs (for testing)
-export const getAvailableAssetIds = () => Object.keys(mockIPAssets);

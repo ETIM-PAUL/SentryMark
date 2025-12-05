@@ -132,9 +132,81 @@ export async function getTokenMetadata(tokenAddress) {
   }
 }
 
-
 export function isDisputed(tag) {
   if (!tag) return "";
   const clean = tag.replace(/^0x/, "");
   return Buffer.from(clean, "hex").toString("ascii").replace(/\0+$/, "");
+}
+
+// Extract frame from video at specific timestamp
+async function extractVideoFrame(videoUrl, timeInSeconds = 0) {
+  return new Promise((resolve, reject) => {
+    const video = document.createElement('video');
+    video.crossOrigin = 'anonymous';
+    video.muted = true;
+    
+    video.addEventListener('error', () => {
+      reject(new Error('Failed to load video'));
+    });
+    
+    video.addEventListener('loadeddata', () => {
+      video.currentTime = timeInSeconds;
+    });
+    
+    video.addEventListener('seeked', () => {
+      try {
+        // Create canvas and draw frame
+        const canvas = document.createElement('canvas');
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        
+        // Convert to blob
+        canvas.toBlob((blob) => {
+          if (blob) {
+            resolve(blob);
+          } else {
+            reject(new Error('Failed to create blob'));
+          }
+        }, 'image/jpeg', 0.95);
+      } catch (error) {
+        reject(error);
+      }
+    });
+    
+    video.src = videoUrl;
+    video.load();
+  });
+}
+
+// Main function: Extract frame, upload to IPFS, open in Google Lens
+export async function analyzeVideoWithGoogleLens(videoUrl, timeInSeconds = 0) {
+  try {
+    console.log('Extracting frame from video...');
+    const frameBlob = await extractVideoFrame(videoUrl, timeInSeconds);
+    
+    // Create file from blob
+    const file = new File([frameBlob], 'video-frame.jpg', { type: 'image/jpeg' });
+    
+    console.log('Uploading frame to IPFS...');
+    const ipfsHash = await uploadFileToIPFS(file);
+    
+    // Construct IPFS URL (using Pinata gateway)
+    const ipfsUrl = `https://gateway.pinata.cloud/ipfs/${ipfsHash}`;
+    console.log('IPFS URL:', ipfsUrl);
+    
+    // Open in Google Lens
+    // const lensUrl = `https://lens.google.com/uploadbyurl?url=${encodeURIComponent(ipfsUrl)}`;
+    // window.open(lensUrl, '_blank');
+    
+    return {
+      ipfsHash,
+      ipfsUrl
+    };
+  } catch (error) {
+    console.error('Error:', error);
+    throw error;
+  }
 }

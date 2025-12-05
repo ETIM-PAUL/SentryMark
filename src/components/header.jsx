@@ -9,7 +9,6 @@ const Header = () => {
   const tabs = [
     { href:'/', id: 'watermarking', label: 'AI Watermarking', icon: Upload },
     { href:'/audio-detect', id: 'audio', label: 'IP Asset C2PA', icon: Music },
-    { href:'/ip_monitoring', id: 'monitoring', label: 'Web & Social Media Monitoring', icon: Globe },
     { href:'/onchain-ip-history', id: 'blockchain', label: 'Blockchain Provenance', icon: Link },
     { href:'/dispute_management', id: 'dispute', label: 'Dispute Management', icon: Scale },
   ];
@@ -19,7 +18,7 @@ const Header = () => {
       {/* Tab Navigation */}
       <div className="bg-slate-900/50 backdrop-blur-sm border-b border-purple-500/20">
         <div className="max-w-7xl mx-auto px-4">
-          <div className="flex overflow-x-auto">
+          <div className="flex overflow-x-auto justify-center">
             {tabs.map((tab) => {
               const Icon = tab.icon;
               return (

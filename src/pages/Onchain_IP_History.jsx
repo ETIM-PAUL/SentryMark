@@ -4,13 +4,13 @@ import Header from '../components/header';
 import toast, { Toaster } from 'react-hot-toast';
 import { fetchIPByIpId, fetchIPTips } from '../queries';
 import { formatDate, getTokenMetadata } from '../utils';
-import { mockIPAssets } from '../utils/mockData';
 import IPAssetLoadingSkeleton from '../components/SkeletonLoader';
 import { RelationshipStats } from '../components/RelationshipStats';
 import { fetchAPIdata, fetchInfringedIPs } from '../queries/api_queries';
 import { TrackingModal } from '../components/TrackingModal';
 import axios from 'axios';
 import { formatUnits } from 'ethers';
+import { analyzeVideoWithGoogleLens } from '../utils';
 
 const Onchain_IP_History = () => {
   const [assetId, setAssetId] = useState('');
@@ -45,15 +45,6 @@ const Onchain_IP_History = () => {
       
       setAssetData({...data, "tips":tips});
 
-      // const data2 = await fetchIPByIpId(assetId.toLowerCase());
-      // if (data2.metadata === undefined) {
-      //   toast.error("No IP Asset found with this address");
-      //   setIsLoading(false);
-      //   return;
-      // }
-      // // const data = await fetchIPAssetData(assetId.trim());
-      // setAssetData({"metadata":data2.metadata, "tokenOwner":data2.tokenOwner, "isIPDisputed":data2.isIPDisputed, "tips":tips});
-
       setTipsPage(1);
       setRevenueClaimsPage(1);
       toast.success('IP Asset data loaded successfully!');
@@ -75,12 +66,24 @@ const Onchain_IP_History = () => {
     setTrackedAssetsLoading(true);
     setShowTrackingModal(true);
     setTrackedAssets([]);
+    let assetUrl = "";
+
+    if(assetData.nftMetadata.raw?.metadata?.mediaType?.includes("image") ?? assetData.nftMetadata.image.contentType?.includes("image")) {
+      assetUrl = assetData.nftMetadata.raw.metadata?.mediaUrl ?? assetData.nftMetadata.image.cachedUrl
+    } else if(assetData.nftMetadata.raw.metadata?.mediaType?.includes("video") ?? assetData.nftMetadata.image.contentType?.includes("video")) {
+      const result = await analyzeVideoWithGoogleLens(assetData.nftMetadata.raw.metadata?.mediaUrl ?? assetData.nftMetadata.image.cachedUrl);
+      console.log("result", result);
+      assetUrl = result.ipfsUrl;
+    } else {
+      toast.error("No media available");
+      return;
+    }
 
     const url = "https://www.searchapi.io/api/v1/search";
     const params = {
       "engine": "google_lens",
       "search_type": "exact_matches",
-      "url": assetData.nftMetadata.raw.metadata.mediaUrl ?? assetData.nftMetadata.image.cachedUrl,
+      "url": assetUrl,
       "api_key": import.meta.env.VITE_SEARCH_API_KEY
     };
 
@@ -91,7 +94,6 @@ const Onchain_IP_History = () => {
         setTrackedAssetsLoading(false);
       })
       .catch(error => {
-        toast.error('Error: ' + error.message);
         console.error('Error:', error);
         setTrackedAssetsLoading(false);
       });
