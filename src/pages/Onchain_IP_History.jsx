@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, FileText, Shield, Users, GitBranch, Network, ChevronDown, ChevronUp, Copy, Play, Pause, Volume2, VolumeX, Music, Radio, MoreVertical, Download, DollarSign, User } from 'lucide-react';
+import { Search, FileText, Shield, Users, GitBranch, Network, ChevronDown, ChevronUp, Copy, Play, Pause, Volume2, VolumeX, Music, Radio, MoreVertical, Download, DollarSign, User, ScanEye } from 'lucide-react';
 import Header from '../components/header';
 import toast, { Toaster } from 'react-hot-toast';
 import { fetchIPByIpId, fetchIPTips } from '../queries';
@@ -7,7 +7,9 @@ import { formatDate, getTokenMetadata } from '../utils';
 import { mockIPAssets } from '../utils/mockData';
 import IPAssetLoadingSkeleton from '../components/SkeletonLoader';
 import { RelationshipStats } from '../components/RelationshipStats';
-import { fetchAPIdata } from '../queries/api_queries';
+import { fetchAPIdata, fetchInfringedIPs } from '../queries/api_queries';
+import { TrackingModal } from '../components/TrackingModal';
+import axios from 'axios';
 
 const Onchain_IP_History = () => {
   const [assetId, setAssetId] = useState('');
@@ -16,6 +18,9 @@ const Onchain_IP_History = () => {
   const [tipsPage, setTipsPage] = useState(1);
   const [mediaLoading, setMediaLoading] = useState(false);
   const [revenueClaimsPage, setRevenueClaimsPage] = useState(1);
+  const [trackedAssets, setTrackedAssets] = useState([]);
+  const [trackedAssetsLoading, setTrackedAssetsLoading] = useState(false);
+  const [showTrackingModal, setShowTrackingModal] = useState(false);
   const itemsPerPage = 5;
 
   const handleFetchAsset = async () => {
@@ -65,6 +70,37 @@ const Onchain_IP_History = () => {
     }
   };
 
+  const handleCheck = async (e) => {
+    setTrackedAssetsLoading(true);
+    setShowTrackingModal(true);
+    setTrackedAssets([]);
+
+    const url = "https://www.searchapi.io/api/v1/search";
+    const params = {
+      "engine": "google_lens",
+      "search_type": "exact_matches",
+      "url": assetData.nftMetadata.raw.metadata.mediaUrl ?? assetData.nftMetadata.image.cachedUrl,
+      "api_key": import.meta.env.VITE_SEARCH_API_KEY
+    };
+
+    axios.get(url, { params })
+      .then(response => {
+        console.log(response.data);
+        setTrackedAssets(response.data.exact_matches.slice(0, 5));
+        setTrackedAssetsLoading(false);
+      })
+      .catch(error => {
+        toast.error('Error: ' + error.message);
+        console.error('Error:', error);
+        setTrackedAssetsLoading(false);
+      });
+  };
+
+    const closeTrackingModal = () => {
+      setShowTrackingModal(false);
+      setTrackedAssets([]);
+    };
+
     // Pagination helpers
     const paginateData = (data, page) => {
       const startIndex = (page - 1) * itemsPerPage;
@@ -73,6 +109,8 @@ const Onchain_IP_History = () => {
     };
   
     const totalPages = (data) => Math.ceil(data.length / itemsPerPage);
+
+    
 
   return (
     <div className="min-h-screen bg-linear-to-br from-slate-900 via-purple-900 to-slate-900">
@@ -99,19 +137,19 @@ const Onchain_IP_History = () => {
                 value={assetId}
                 onChange={(e) => setAssetId(e.target.value)}
                 onKeyDown={handleKeyPress}
-                placeholder="e.g.,0x70967f61f7770E14d26E0b14A2C698a1e2AC344B,"
+                placeholder="e.g.,0x70967f61f7770E14d26E0b14A2C698a1e2AC344B"
                 className="flex-1 bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-3 text-slate-200 placeholder-slate-500 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
               />
               <button
                 onClick={handleFetchAsset}
                 disabled={isLoading || !assetId.trim()}
-                className="bg-linear-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 disabled:from-slate-600 disabled:to-slate-700 text-white px-8 py-3 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 shadow-lg hover:shadow-purple-500/20 disabled:cursor-not-allowed"
+                className="hiddenbg-linear-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 disabled:from-slate-600 disabled:to-slate-700 text-white px-8 py-3 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 shadow-lg hover:shadow-purple-500/20 disabled:cursor-not-allowed"
               >
                 <Search size={20} />
                 {isLoading ? 'Fetching...' : 'Fetch'}
               </button>
             </div>
-            <p className="text-slate-500 text-sm mt-3">Try: 0x4EeD6E09A4343B72b7E8aD6449f35C91868b2730,  A- 0x6E382247EA4C158005573B304425C614C6eBa9c0, I - 0x70967f61f7770E14d26E0b14A2C698a1e2AC344B</p>
+            <p className="text-slate-500 text-sm mt-3">Try: V- 0x4EeD6E09A4343B72b7E8aD6449f35C91868b2730,  A- 0x6E382247EA4C158005573B304425C614C6eBa9c0, I - 0x70967f61f7770E14d26E0b14A2C698a1e2AC344B</p>
           </div>
         </div>
 
@@ -128,6 +166,8 @@ const Onchain_IP_History = () => {
                 nftMetadata={assetData.nftMetadata}
                 mediaLoading={mediaLoading}
                 setMediaLoading={setMediaLoading}
+                handleCheck={handleCheck}
+
               />
               <RelationshipStats 
                 parentsCount={assetData.parentsCount}
@@ -172,12 +212,22 @@ const Onchain_IP_History = () => {
           </div>
         )}
       </div>
+
+      {/* Tracking Modal */}
+      {showTrackingModal && (
+        <TrackingModal 
+          isLoading={trackedAssetsLoading}
+          trackedAssets={trackedAssets}
+          onClose={closeTrackingModal}
+        />
+      )}
+
     </div>
   );
 };
 
 // Media Display Component
-const MediaDisplay = ({ nftMetadata, mediaLoading, setMediaLoading }) => {
+const MediaDisplay = ({ nftMetadata, mediaLoading, setMediaLoading, handleCheck }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = React.useState(0);
   const [duration, setDuration] = React.useState(0);
@@ -596,9 +646,18 @@ const MediaDisplay = ({ nftMetadata, mediaLoading, setMediaLoading }) => {
 
   return (
     <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 border border-purple-500/20 shadow-xl hover:shadow-2xl hover:border-purple-500/30 transition-all min-h-[600px]">
-      <div className="flex items-center gap-3 mb-4">
-        <FileText className="text-purple-400" size={24} />
-        <h3 className="text-xl font-bold text-slate-200">Media Preview</h3>
+      <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center gap-3">
+          <FileText className="text-purple-400" size={24} />
+          <h3 className="text-xl font-bold text-slate-200">Media Preview</h3>
+        </div>
+        <button
+          onClick={handleCheck}
+          className="cursor-pointer bg-linear-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 disabled:from-slate-600 disabled:to-slate-700 text-white px-8 py-3 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 shadow-lg hover:shadow-purple-500/20 disabled:cursor-not-allowed"
+        >
+          <ScanEye size={20} />
+          Internet Track
+        </button>
       </div>
       
       <div className="relative bg-slate-900/50 rounded-lg overflow-hidden min-h-[500px] flex items-center justify-center">

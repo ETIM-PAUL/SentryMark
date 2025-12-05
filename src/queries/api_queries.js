@@ -1,3 +1,5 @@
+import axios from "axios";
+
 export async function fetchAPIdata(ipId) {  
 
 const url = 'https://staging-api.storyprotocol.net/api/v4/assets';
@@ -29,6 +31,26 @@ try {
   throw error;
 }
 
+}
+
+export async function fetchInfringedIPs(ip_url) {
+  const url = "https://www.searchapi.io/api/v1/search";
+  const params = {
+    "engine": "google_lens",
+    "search_type": "exact_matches",
+    "url": ip_url,
+    "api_key": import.meta.env.VITE_SEARCH_API_KEY
+  };
+
+  axios.get(url, { params })
+    .then(response => {
+      console.log(response.data);
+      return response.data;
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      return error;
+    });
 }
 
 

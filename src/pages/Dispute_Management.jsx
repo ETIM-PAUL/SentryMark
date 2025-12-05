@@ -159,7 +159,6 @@ const Dispute_Management = () => {
         bond: parseEther(!raiseForm.bond ? "0" : raiseForm.bond),
         liveness: secondsFromNow(raiseForm.liveness),
     })
-    console.log(`Dispute raised at transaction hash ${disputeResponse.txHash}, Dispute ID: ${disputeResponse.disputeId}`)
     setShowRaiseModal(false);
     setIsSubmitting(false);
     setRaiseForm({ targetIpId: '', disputeEvidenceHash: '', targetTag: 'IMPROPER_REGISTRATION', data: '' });
@@ -221,7 +220,7 @@ const Dispute_Management = () => {
     const counterEvidenceCID = assertForm.selectedEvidenceType === "file" ? await uploadFileToIPFS(assertForm.evidenceFile) : await uploadTextToIPFS(assertForm.evidenceText)
     
     const assertionId = await storyClient.dispute.disputeIdToAssertionId(Number(disputeData.id));
-    console.log(disputeData);
+
       const assertDispute = await storyClient.dispute.disputeIdToAssertionId({
         ipId: disputeData.targetIpId,
         assertionId: assertionId,
@@ -562,8 +561,8 @@ const DisputeCard = ({ disputeData, address, onResolve, onSetJudgement, onCounte
       )}
       
 
-      {isDisputed(disputeData.currentTag) === "" && (
-        <div className="border-t border-purple-500/20 pt-6">
+      {isDisputed(disputeData.currentTag) === "IN_DISPUTE" && (
+        <div className="border-t hidden border-purple-500/20 pt-6">
           <div className="bg-purple-500/10 border border-purple-500/20 rounded-lg p-4 mb-4">
             <p className="text-purple-300 text-sm font-medium flex items-center gap-2">
               <TrendingUp size={16} />
