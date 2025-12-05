@@ -17,6 +17,7 @@ const Onchain_IP_History = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [assetData, setAssetData] = useState(null);
   const [tipsPage, setTipsPage] = useState(1);
+  const [trackedAssetsPage, setTrackedAssetsPage] = useState(1);
   const [mediaLoading, setMediaLoading] = useState(false);
   const [revenueClaimsPage, setRevenueClaimsPage] = useState(1);
   const [trackedAssets, setTrackedAssets] = useState([]);
@@ -66,13 +67,13 @@ const Onchain_IP_History = () => {
     setTrackedAssetsLoading(true);
     setShowTrackingModal(true);
     setTrackedAssets([]);
+    setTrackedAssetsPage(1);
     let assetUrl = "";
 
     if(assetData.nftMetadata.raw?.metadata?.mediaType?.includes("image") ?? assetData.nftMetadata.image.contentType?.includes("image")) {
       assetUrl = assetData.nftMetadata.raw.metadata?.mediaUrl ?? assetData.nftMetadata.image.cachedUrl
     } else if(assetData.nftMetadata.raw.metadata?.mediaType?.includes("video") ?? assetData.nftMetadata.image.contentType?.includes("video")) {
       const result = await analyzeVideoWithGoogleLens(assetData.nftMetadata.raw.metadata?.mediaUrl ?? assetData.nftMetadata.image.cachedUrl);
-      console.log("result", result);
       assetUrl = result.ipfsUrl;
     } else {
       toast.error("No media available");
@@ -90,7 +91,7 @@ const Onchain_IP_History = () => {
     axios.get(url, { params })
       .then(response => {
         console.log(response.data);
-        setTrackedAssets(response.data.exact_matches.slice(0, 5));
+        setTrackedAssets(response.data.exact_matches);
         setTrackedAssetsLoading(false);
       })
       .catch(error => {
@@ -222,6 +223,9 @@ const Onchain_IP_History = () => {
           isLoading={trackedAssetsLoading}
           trackedAssets={trackedAssets}
           onClose={closeTrackingModal}
+          itemsPerPage={itemsPerPage}
+          currentPage={trackedAssetsPage}  
+          setCurrentPage={setTrackedAssetsPage}   
         />
       )}
 
