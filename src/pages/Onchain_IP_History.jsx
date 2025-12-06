@@ -181,16 +181,17 @@ const Onchain_IP_History = () => {
                 childrenCount={assetData.childrenCount}
                 descendantsCount={assetData.descendantsCount}
                 isInGroup={assetData.isInGroup}
+                creators={assetData.nftMetadata?.raw?.metadata?.creators}
               />
             </div>
 
             {/* Tips and Revenue Claims Cards Row */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Tips Card */}
+              {/* Tips Card - Left */}
               <TipsTable tips={assetData.tips} currentPage={tipsPage} setCurrentPage={setTipsPage} paginatedTips={paginateData(assetData.tips, tipsPage)} totalPages={totalPages(assetData.tips)} />
               
-              {/* Revenue Claims Card */}
-              {/* <RevenueClaimsTable claims={assetData.revenueClaims} currentPage={revenueClaimsPage} setCurrentPage={setRevenueClaimsPage} paginatedClaims={paginateData(assetData.revenueClaims, revenueClaimsPage)} totalPages={totalPages(assetData.revenueClaims)} /> */}
+              {/* Tips Card - Right (Duplicate) */}
+              <TipsTable tips={assetData.tips} currentPage={tipsPage} setCurrentPage={setTipsPage} paginatedTips={paginateData(assetData.tips, tipsPage)} totalPages={totalPages(assetData.tips)} />
             </div>
             {/* Metadata and License Cards Row */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -700,7 +701,7 @@ const MetadataCard = ({ assetData }) => {
     toast.success('Copied to clipboard!');
   };
 
-  // Define all metadata fields
+  // Define all metadata fields (Creators removed - now shown in Relationship Stats)
   const allFields = [
     { label: 'IP ID', value: assetData.ipId || assetData.id, key: 'ipId' },
     { label: 'Contract Address', value: assetData.tokenContract || assetData.nftMetadata?.contract_address, key: 'tokenContract' },
@@ -711,7 +712,6 @@ const MetadataCard = ({ assetData }) => {
     { label: 'Description', value: assetData.description || assetData.nftMetadata?.raw?.metadata?.description, key: 'description' },
     { label: 'Registration Date', value: assetData.registrationDate ? formatDate(assetData.registrationDate) : 'N/A', key: 'registrationDate' },
     { label: 'Created At', value: assetData.createdAt ? formatDate(assetData.createdAt) : 'N/A', key: 'createdAt' },
-    { label: 'Last Updated At', value: assetData.lastUpdatedAt ? formatDate(assetData.lastUpdatedAt) : 'N/A', key: 'lastUpdatedAt' },
     { label: 'Chain ID', value: assetData.chainId, key: 'chainId' },
     { label: 'Owner Address', value: assetData.ownerAddress, key: 'ownerAddress' },
     { label: 'Creator', value: assetData.nftMetadata?.raw?.metadata?.creator, key: 'creator' },
@@ -726,14 +726,25 @@ const MetadataCard = ({ assetData }) => {
 
   const renderField = (field) => {
     const isExpanded = expandedMetadataFields[field.key];
-    const isLong = field.value && field.value.toString().length > 50;
+    const fieldValue = field.value?.toString() || 'N/A';
+    
+    // Check if the value looks like an Ethereum address (0x followed by 40 hex characters)
+    const isAddress = fieldValue.startsWith('0x') && fieldValue.length === 42;
+    
+    // For addresses, truncate to show first 10 and last 8 characters
+    const displayValue = isAddress && !isExpanded 
+      ? `${fieldValue.slice(0, 10)}...${fieldValue.slice(-8)}`
+      : fieldValue;
+    
+    const isLong = fieldValue.length > 50;
+    const shouldShowExpandButton = isAddress || isLong;
     
     return (
       <div key={field.key} className="bg-slate-900/30 rounded-lg p-4 hover:bg-slate-900/50 transition-all">
         <div className="flex items-center justify-between mb-2">
           <span className="text-slate-400 text-sm font-medium">{field.label}</span>
           <div className="flex items-center gap-2">
-            {isLong && (
+            {shouldShowExpandButton && (
               <button
                 onClick={() => toggleMetadataField(field.key)}
                 className="text-purple-400 hover:text-purple-300 text-xs transition-colors flex items-center gap-1"
@@ -743,7 +754,7 @@ const MetadataCard = ({ assetData }) => {
               </button>
             )}
             <button
-              onClick={() => copyToClipboard(field.value?.toString() || '')}
+              onClick={() => copyToClipboard(fieldValue)}
               className="text-purple-400 hover:text-purple-300 transition-colors"
               title="Copy to clipboard"
             >
@@ -751,8 +762,8 @@ const MetadataCard = ({ assetData }) => {
             </button>
           </div>
         </div>
-        <div className={`text-slate-200 text-sm font-mono break-all ${!isExpanded && isLong ? 'line-clamp-2' : ''}`}>
-          {field.value?.toString() || 'N/A'}
+        <div className={`text-slate-200 text-sm font-mono break-all ${!isExpanded && isLong && !isAddress ? 'line-clamp-2' : ''}`}>
+          {displayValue}
         </div>
       </div>
     );
@@ -997,14 +1008,25 @@ const LicenseDetailsCard = ({ license, licenseCount }) => {
 
   const renderField = (label, value, key) => {
     const isExpanded = expandedLicenseFields[key];
-    const isLong = value && value.toString().length > 50;
+    const fieldValue = value?.toString() || 'N/A';
+    
+    // Check if the value looks like an Ethereum address (0x followed by 40 hex characters)
+    const isAddress = fieldValue.startsWith('0x') && fieldValue.length === 42;
+    
+    // For addresses, truncate to show first 10 and last 8 characters
+    const displayValue = isAddress && !isExpanded 
+      ? `${fieldValue.slice(0, 10)}...${fieldValue.slice(-8)}`
+      : fieldValue;
+    
+    const isLong = fieldValue.length > 50;
+    const shouldShowExpandButton = isAddress || isLong;
     
     return (
       <div key={key} className="bg-slate-900/30 rounded-lg p-4 hover:bg-slate-900/50 transition-all">
         <div className="flex items-center justify-between mb-2">
           <span className="text-slate-400 text-sm font-medium">{label}</span>
           <div className="flex items-center gap-2">
-            {isLong && (
+            {shouldShowExpandButton && (
               <button
                 onClick={() => toggleLicenseField(key)}
                 className="text-purple-400 hover:text-purple-300 text-xs transition-colors flex items-center gap-1"
@@ -1014,7 +1036,7 @@ const LicenseDetailsCard = ({ license, licenseCount }) => {
               </button>
             )}
             <button
-              onClick={() => copyToClipboard(value?.toString() || '')}
+              onClick={() => copyToClipboard(fieldValue)}
               className="text-purple-400 hover:text-purple-300 transition-colors"
               title="Copy to clipboard"
             >
@@ -1022,8 +1044,8 @@ const LicenseDetailsCard = ({ license, licenseCount }) => {
             </button>
           </div>
         </div>
-        <div className={`text-slate-200 text-sm font-mono break-all ${!isExpanded && isLong ? 'line-clamp-2' : ''}`}>
-          {value?.toString() || 'N/A'}
+        <div className={`text-slate-200 text-sm font-mono break-all ${!isExpanded && isLong && !isAddress ? 'line-clamp-2' : ''}`}>
+          {displayValue}
         </div>
       </div>
     );
@@ -1032,7 +1054,7 @@ const LicenseDetailsCard = ({ license, licenseCount }) => {
   // Helper function to convert Wei to ETH
   const formatMintingFee = (fee) => {
     if (!fee || fee === '0' || fee === 0) return '0 IP';
-    const feeInEth = formatUnits(fee, 18);
+    const feeInEth = Number(fee) / 1e6;
     return `${feeInEth} IP`;
   };
 
@@ -1060,9 +1082,9 @@ const LicenseDetailsCard = ({ license, licenseCount }) => {
   // Filter out fields with null/undefined values
   const validFields = allFields.filter(field => field.value !== null && field.value !== undefined && field.value !== '');
 
-  // Show first 6 fields or all fields
-  const fieldsToShow = showAllLicenseFields ? validFields : validFields.slice(0, 6);
-  const hasMoreFields = validFields.length > 6;
+  // Show NO text fields initially, all fields when expanded
+  const fieldsToShow = showAllLicenseFields ? validFields : [];
+  const hasMoreFields = validFields.length > 0;
 
   return (
     <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 border border-purple-500/20 shadow-xl hover:shadow-2xl hover:border-purple-500/30 transition-all">
@@ -1072,8 +1094,8 @@ const LicenseDetailsCard = ({ license, licenseCount }) => {
       </div>
       
       <div className="space-y-3">
-        {/* Boolean Fields - Always visible if terms exist */}
-        {license.terms && showAllLicenseFields && (
+        {/* Boolean Fields - ALWAYS visible first */}
+        {license.terms && (
           <div className="grid grid-cols-2 gap-3 mb-4">
             <BooleanField label="Transferable" value={license.terms.transferable} />
             <BooleanField label="Commercial Use" value={license.terms.commercialUse} />
@@ -1101,7 +1123,7 @@ const LicenseDetailsCard = ({ license, licenseCount }) => {
             ) : (
               <>
                 <ChevronDown size={20} />
-                Show More ({validFields.length - 6} more fields)
+                Show More ({validFields.length} more fields)
               </>
             )}
           </button>

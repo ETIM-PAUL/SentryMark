@@ -30,7 +30,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Directories for temp files
-const TEMP_DIR = path.join(__dirname, 'temp');
+const TEMP_DIR = path.join(__dirname, 'tmp');
 const KEYS_DIR = path.join(__dirname, 'keys');
 
 // Ensure directories exist
