@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Backend API for signing and reading C2PA manifests on assets",
   "type": "module",
-  "main": "server.js",
+  "main": "src/app.js",
   "scripts": {
     "start": "node src/app.js",
     "dev": "nodemon src/app.js"
