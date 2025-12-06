@@ -9,6 +9,7 @@ RUN apt-get update && apt-get install -y \
     libgcc1 \
     libstdc++6 \
     ca-certificates \
+    ffmpeg \
     && rm -rf /var/lib/apt/lists/*
 
 # ------------------------------------------------------
