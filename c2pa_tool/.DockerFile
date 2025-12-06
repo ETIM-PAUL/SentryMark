@@ -36,4 +36,4 @@ RUN mkdir -p /tmp/c2pa-temp
 # Expose and run
 # ------------------------------------------------------
 EXPOSE 3000
-CMD ["node", "server.js"]
+CMD ["node", "src/app.js"]
