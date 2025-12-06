@@ -1,7 +1,7 @@
-import { Users, GitBranch, Network, Shield } from 'lucide-react';
+import { Users, GitBranch, Network, Shield, UserCircle } from 'lucide-react';
 
 
-export const RelationshipStats = ({ parentsCount, ancestorsCount, childrenCount, descendantsCount, isInGroup }) => {
+export const RelationshipStats = ({ parentsCount, ancestorsCount, childrenCount, descendantsCount, isInGroup, creators }) => {
     const stats = [
       { label: 'Parents', value: parentsCount ?? 0, icon: <Users size={20} />, color: 'text-blue-400' },
       { label: 'Ancestors', value: ancestorsCount ?? 0, icon: <GitBranch size={20} />, color: 'text-purple-400' },
@@ -44,6 +44,28 @@ export const RelationshipStats = ({ parentsCount, ancestorsCount, childrenCount,
               </span>
             </div>
           </div>
+
+          {/* Creators Section */}
+          {creators && creators.length > 0 && (
+            <div className="bg-slate-900/30 rounded-lg p-4 hover:bg-slate-900/50 transition-all">
+              <div className="flex items-center gap-3 mb-3">
+                <UserCircle className="text-cyan-400" size={20} />
+                <span className="text-slate-300 font-medium">Creators</span>
+              </div>
+              <div className="space-y-3">
+                {creators.map((creator, index) => (
+                  <div key={index} className="bg-slate-800/50 rounded-lg p-3 border border-slate-700/50">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-cyan-300 font-semibold text-sm">{creator.name}</span>
+                    </div>
+                    <div className="text-slate-400 text-xs font-mono break-all">
+                      {creator.address}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     );
