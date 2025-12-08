@@ -11,7 +11,6 @@
   - [2. AI Watermark Protection](#2-ai-watermark-protection)
   - [3. Dispute Management System](#3-dispute-management-system)
   - [4. On-Chain IP History Tracking](#4-on-chain-ip-history-tracking)
-  - [5. IP Monitoring](#5-ip-monitoring)
 - [Technology Stack](#technology-stack)
 - [System Architecture](#system-architecture)
 - [Installation](#installation)
@@ -48,7 +47,6 @@ graph TB
         A2[AI Watermark UI]
         A3[Dispute Management]
         A4[IP History Dashboard]
-        A5[Monitoring Tools]
     end
 
     subgraph "Backend Services"
@@ -541,76 +539,6 @@ graph LR
 - GraphQL API integration
 - Event log parsing
 - Smart contract state queries
-
----
-
-### 5. IP Monitoring
-
-Real-time monitoring dashboard for IP asset activity and infringement detection.
-
-#### Monitoring Architecture
-
-```mermaid
-graph TB
-    subgraph "Data Collection"
-        A[Blockchain Events]
-        B[IPFS Content]
-        C[C2PA Manifests]
-        D[Watermark Checks]
-    end
-
-    subgraph "Processing"
-        E[Event Aggregator]
-        F[Pattern Detection]
-        G[Alert Generator]
-    end
-
-    subgraph "User Interface"
-        H[Real-time Dashboard]
-        I[Alert Notifications]
-        J[Activity Feed]
-        K[Analytics]
-    end
-
-    A --> E
-    B --> E
-    C --> E
-    D --> E
-    
-    E --> F
-    F --> G
-    
-    G --> H
-    G --> I
-    G --> J
-    G --> K
-
-    style E fill:#06b6d4
-    style H fill:#8b5cf6
-```
-
-#### Capabilities
-
-**Activity Monitoring**
-- Real-time transaction tracking
-- License usage monitoring
-- Unauthorized usage detection
-- Anomaly detection
-- Pattern recognition
-
-**Alert System**
-- Configurable alert rules
-- Email/webhook notifications
-- Severity classification
-- Alert history
-- Custom alert conditions
-
-**Analytics Dashboard**
-- Usage statistics
-- Geographic distribution
-- Time-series analysis
-- Trend visualization
-- Comparative analytics
 
 ---
 
