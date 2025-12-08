@@ -10,6 +10,7 @@ import {
   FeatureCards, 
   ActionButtons 
 } from '../components/C2PA';
+import { uploadFileToIPFS, formatDate } from '../utils';
 
 const Audio_Detect = () => {
     const [activeTab, setActiveTab] = useState('embed');
@@ -47,7 +48,7 @@ const Audio_Detect = () => {
       }
     };
 
-    const handleAddC2PA = async (uploadToIPFS = false) => {
+    const handleAddC2PA = async (shouldUploadToIPFS = false) => {
       if (!uploadedFile) {
         setError('Please upload a file first');
         return;
@@ -64,37 +65,80 @@ const Audio_Detect = () => {
       }
 
       setProcessing(true);
-      setProcessingType(uploadToIPFS ? 'ipfs' : 'local');
+      setProcessingType(shouldUploadToIPFS ? 'ipfs' : 'local');
       setError(null);
       setResult(null);
 
       try {
+        // Step 1: Send file to backend for C2PA signing
+        console.log('Step 1: Sending file to backend for C2PA signing...');
         const formData = new FormData();
         formData.append('file', uploadedFile);
         formData.append('title', title);
         formData.append('creator', creator);
-        formData.append('uploadToIPFS', uploadToIPFS);
 
-        // TODO: Replace with your actual C2PA backend endpoint
-        const response = await fetch('http://localhost:3001/api/c2pa/sign', {
+        const response = await fetch('/api/sign', {
           method: 'POST',
           body: formData,
         });
 
+        console.log('Backend response status:', response.status);
+
         if (!response.ok) {
-          throw new Error('Failed to process file');
+          const errorText = await response.text();
+          console.error('Backend error:', errorText);
+          throw new Error(`Failed to sign file with C2PA: ${response.status} - ${errorText}`);
         }
 
-        const data = await response.json();
+        // Step 2: Get the signed file as a Blob
+        console.log('Step 2: Receiving signed file...');
+        const signedBlob = await response.blob();
+        console.log('Signed blob size:', signedBlob.size, 'bytes');
         
-        setResult({
-          success: true,
-          type: uploadToIPFS ? 'ipfs' : 'local',
-          downloadUrl: data.downloadUrl,
-          ipfsUrl: data.ipfsUrl,
-          fileName: data.fileName,
-        });
+        if (shouldUploadToIPFS) {
+          // Step 3: Upload signed file to IPFS via Pinata
+          console.log('Step 3: Uploading to IPFS via Pinata...');
+          const signedFile = new File([signedBlob], `signed_${uploadedFile.name}`, { 
+            type: uploadedFile.type 
+          });
+          
+          console.log('Calling uploadFileToIPFS...');
+          const ipfsHash = await uploadFileToIPFS(signedFile);
+          console.log('IPFS upload successful! Hash:', ipfsHash);
+          
+          const ipfsUrl = `https://gateway.pinata.cloud/ipfs/${ipfsHash}`;
+          
+          setResult({
+            success: true,
+            type: 'ipfs',
+            ipfsUrl: ipfsUrl,
+            ipfsHash: ipfsHash,
+            fileName: `signed_${uploadedFile.name}`,
+          });
+          
+          // Clear form inputs after successful IPFS upload
+          setUploadedFile(null);
+          setTitle('');
+          setCreator('');
+        } else {
+          // Step 3: For local download, create a download URL
+          console.log('Step 3: Creating download URL...');
+          const downloadUrl = URL.createObjectURL(signedBlob);
+          
+          setResult({
+            success: true,
+            type: 'local',
+            downloadUrl: downloadUrl,
+            fileName: `signed_${uploadedFile.name}`,
+          });
+          
+          // Clear form inputs after successful processing
+          setUploadedFile(null);
+          setTitle('');
+          setCreator('');
+        }
       } catch (err) {
+        console.error('Full error details:', err);
         setError(`Failed to add C2PA manifest: ${err.message}`);
       } finally {
         setProcessing(false);
@@ -142,29 +186,146 @@ const Audio_Detect = () => {
           const formData = new FormData();
           formData.append('file', detectFile);
 
-          response = await fetch('http://localhost:3001/api/c2pa/validate', {
+          response = await fetch('/api/validate', {
             method: 'POST',
             body: formData,
           });
         } else {
-          // URL method
-          response = await fetch('http://localhost:3001/api/c2pa/validate-url', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ url: detectUrl }),
+          // URL method - Fetch the file from URL first, then validate
+          console.log('Step 1: Fetching file from URL:', detectUrl);
+          
+          // Normalize IPFS URLs
+          let fetchUrl = detectUrl;
+          if (detectUrl.startsWith('ipfs://')) {
+            // Convert ipfs:// to HTTP gateway URL
+            const ipfsHash = detectUrl.replace('ipfs://', '');
+            fetchUrl = `https://gateway.pinata.cloud/ipfs/${ipfsHash}`;
+          }
+          
+          // Fetch the file from the URL with proper options
+          const fileResponse = await fetch(fetchUrl, {
+            method: 'GET',
+            mode: 'cors',
+            cache: 'no-cache',
           });
+          
+          if (!fileResponse.ok) {
+            throw new Error(`Failed to fetch file from URL: ${fileResponse.status} ${fileResponse.statusText}`);
+          }
+          
+          console.log('Step 2: File fetched successfully');
+          console.log('Response headers:', fileResponse.headers.get('content-type'));
+          console.log('Response status:', fileResponse.status);
+          
+          const fileBlob = await fileResponse.blob();
+          console.log('File blob size:', fileBlob.size, 'bytes');
+          console.log('File blob type:', fileBlob.type);
+          
+          // If blob type is empty, try to infer from URL or default to image
+          let mimeType = fileBlob.type;
+          if (!mimeType || mimeType === 'application/octet-stream') {
+            const urlLower = fetchUrl.toLowerCase();
+            if (urlLower.includes('.jpg') || urlLower.includes('.jpeg')) {
+              mimeType = 'image/jpeg';
+            } else if (urlLower.includes('.png')) {
+              mimeType = 'image/png';
+            } else if (urlLower.includes('.mp4')) {
+              mimeType = 'video/mp4';
+            } else if (urlLower.includes('.mp3')) {
+              mimeType = 'audio/mpeg';
+            } else {
+              // Try to get from response headers
+              mimeType = fileResponse.headers.get('content-type') || 'application/octet-stream';
+            }
+          }
+          
+          // Extract filename from URL or use a default
+          const urlPath = new URL(fetchUrl).pathname;
+          let fileName = urlPath.split('/').pop() || 'downloaded_file';
+          
+          // Add extension if not present
+          if (!fileName.includes('.')) {
+            if (mimeType.includes('jpeg')) fileName += '.jpg';
+            else if (mimeType.includes('png')) fileName += '.png';
+            else if (mimeType.includes('mp4')) fileName += '.mp4';
+            else if (mimeType.includes('mpeg')) fileName += '.mp3';
+          }
+          
+          console.log('Creating file with name:', fileName, 'and type:', mimeType);
+          
+          // Create a File object from the blob
+          const file = new File([fileBlob], fileName, { type: mimeType });
+          
+          console.log('Step 3: Sending file to validation API...');
+          console.log('File details - Name:', file.name, 'Size:', file.size, 'Type:', file.type);
+          
+          // Now send the file to validation API
+          const formData = new FormData();
+          formData.append('file', file);
+
+          response = await fetch('/api/validate', {
+            method: 'POST',
+            body: formData,
+          });
+          
+          console.log('Step 4: Validation API response status:', response.status);
         }
 
         if (!response.ok) {
-          throw new Error('Failed to validate file');
+          // Handle 404 - No manifest found
+          if (response.status === 404) {
+            throw new Error('This asset does not contain C2PA provenance data');
+          }
+          
+          // Try to get error details from response
+          try {
+            const errorData = await response.json();
+            if (errorData.details) {
+              throw new Error(errorData.details);
+            }
+          } catch {
+            // If parsing fails, use generic message
+          }
+          
+          throw new Error('This asset does not contain C2PA provenance data');
         }
 
         const data = await response.json();
+        
+        // Check if the response indicates no manifest
+        if (data.error || !data.validation || !data.validation.hasManifest) {
+          throw new Error('This asset does not contain C2PA provenance data');
+        }
+        
+        // Extract activeManifest from manifestStore if it exists
+        if (data.manifestStore && data.manifestStore.manifests) {
+          const activeLabel = data.manifestStore.active_manifest;
+          if (activeLabel) {
+            data.activeManifest = data.manifestStore.manifests[activeLabel];
+          }
+        }
+        
         setManifestData(data);
+        
+        // Clear inputs after successful detection
+        if (detectMethod === 'file') {
+          setDetectFile(null);
+        } else {
+          setDetectUrl('');
+        }
       } catch (err) {
-        setDetectError(`Failed to detect C2PA manifest: ${err.message}`);
+        // Show user-friendly error message
+        const errorMessage = err.message.includes('C2PA provenance data') 
+          ? err.message 
+          : 'This asset does not contain C2PA provenance data';
+        setDetectError(errorMessage);
+        
+        // Clear inputs after error
+        if (detectMethod === 'file') {
+          setDetectFile(null);
+        } else {
+          setDetectUrl('');
+        }
       } finally {
         setDetecting(false);
       }
@@ -200,7 +361,7 @@ const Audio_Detect = () => {
                     setActiveTab('embed');
                     setResult(null);
                   }}
-                  className={`flex-1 py-3 px-6 rounded-lg font-semibold transition-all ${
+                  className={`flex-1 py-3 px-6 rounded-lg font-semibold transition-all cursor-pointer ${
                     activeTab === 'embed'
                       ? 'bg-linear-to-r from-purple-600 to-pink-600 text-white shadow-lg shadow-purple-500/50 scale-105'
                       : 'bg-slate-700/50 text-purple-200 hover:bg-slate-700'
@@ -214,7 +375,7 @@ const Audio_Detect = () => {
                     setActiveTab('c2pa-detect');
                     setResult(null);
                   }}
-                  className={`flex-1 py-3 px-6 rounded-lg font-semibold transition-all ${
+                  className={`flex-1 py-3 px-6 rounded-lg font-semibold transition-all cursor-pointer ${
                     activeTab === 'c2pa-detect'
                       ? 'bg-linear-to-r from-purple-600 to-pink-600 text-white shadow-lg shadow-purple-500/50 scale-105'
                       : 'bg-slate-700/50 text-purple-200 hover:bg-slate-700'
@@ -354,7 +515,7 @@ const Audio_Detect = () => {
                       <button
                         onClick={() => handleAddC2PA(false)}
                         disabled={processing}
-                        className="bg-green-700 hover:bg-green-800 disabled:bg-slate-600 disabled:cursor-not-allowed text-white font-semibold py-4 rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg hover:shadow-green-500/50"
+                        className="bg-green-700 hover:bg-green-800 disabled:bg-slate-600 disabled:cursor-not-allowed cursor-pointer text-white font-semibold py-4 rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg hover:shadow-green-500/50"
                       >
                         {processing && processingType === 'local' ? (
                           <>
@@ -372,7 +533,7 @@ const Audio_Detect = () => {
                       <button
                         onClick={() => handleAddC2PA(true)}
                         disabled={processing}
-                        className="bg-blue-700 hover:bg-blue-800 disabled:bg-slate-600 disabled:cursor-not-allowed text-white font-semibold py-4 rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg hover:shadow-blue-500/50"
+                        className="bg-blue-700 hover:bg-blue-800 disabled:bg-slate-600 disabled:cursor-not-allowed cursor-pointer text-white font-semibold py-4 rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg hover:shadow-blue-500/50"
                       >
                         {processing && processingType === 'ipfs' ? (
                           <>
@@ -381,7 +542,7 @@ const Audio_Detect = () => {
                           </>
                         ) : (
                           <>
-                            <Globe className="w-5 h-5" />
+                            <Globe className="w-5 h-5 cursor-pointer" />
                             Add C2PA, Upload to IPFS
                           </>
                         )}
@@ -402,7 +563,7 @@ const Audio_Detect = () => {
                         setManifestData(null);
                         setDetectError(null);
                       }}
-                      className={`flex-1 py-3 px-6 rounded-lg font-semibold transition-all ${
+                      className={`flex-1 py-3 px-6 rounded-lg font-semibold transition-all cursor-pointer ${
                         detectMethod === 'file'
                           ? 'bg-blue-600 text-white shadow-lg'
                           : 'bg-slate-700/50 text-purple-200 hover:bg-slate-700'
@@ -417,7 +578,7 @@ const Audio_Detect = () => {
                         setManifestData(null);
                         setDetectError(null);
                       }}
-                      className={`flex-1 py-3 px-6 rounded-lg font-semibold transition-all ${
+                      className={`flex-1 py-3 px-6 rounded-lg font-semibold transition-all cursor-pointer ${
                         detectMethod === 'url'
                           ? 'bg-blue-600 text-white shadow-lg'
                           : 'bg-slate-700/50 text-purple-200 hover:bg-slate-700'
@@ -491,7 +652,7 @@ const Audio_Detect = () => {
                       <button
                         onClick={handleDetectManifest}
                         disabled={detecting}
-                        className="w-full bg-blue-700 hover:bg-blue-800 disabled:bg-slate-600 disabled:cursor-not-allowed text-white font-semibold py-4 rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg hover:shadow-blue-500/50"
+                        className="w-full bg-blue-700 hover:bg-blue-800 disabled:bg-slate-600 disabled:cursor-not-allowed cursor-pointer text-white font-semibold py-4 rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg hover:shadow-blue-500/50"
                       >
                         {detecting ? (
                           <>
@@ -635,7 +796,7 @@ const Audio_Detect = () => {
                                           <div className="flex items-center justify-between mb-2">
                                             <span className="text-purple-200 font-semibold">{action.action}</span>
                                             <span className="text-purple-400 text-sm">
-                                              {new Date(action.when).toLocaleString()}
+                                              {formatDate(action.when)}
                                             </span>
                                           </div>
                                           {action.softwareAgent && (
