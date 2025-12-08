@@ -10,10 +10,20 @@ export default defineConfig({
   },
   server: {
     proxy: {
-      '/api': {
-        target: 'https://api.openai.com', // Replace with your backend server URL
+      '/api/sign': {
+        target: 'https://sentrymark-c2pa.onrender.com',
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api/, ''),
+        secure: true,
+      },
+      '/api/validate': {
+        target: 'https://sentrymark-c2pa.onrender.com',
+        changeOrigin: true,
+        secure: true,
+      },
+      '/api/health': {
+        target: 'https://sentrymark-c2pa.onrender.com',
+        changeOrigin: true,
+        secure: true,
       },
     },
   },
