@@ -7,7 +7,7 @@
 - [Overview](#overview)
 - [Architecture](#architecture)
 - [Core Features](#core-features)
-  - [1. C2PA Signing and Detection](#1-c2pa-signing-and-detection)
+  - [1. Provenance Tracking (C2PA)](#1-provenance-tracking-c2pa)
   - [2. AI Watermark Protection](#2-ai-watermark-protection)
   - [3. Dispute Management System](#3-dispute-management-system)
   - [4. On-Chain IP History Tracking](#4-on-chain-ip-history-tracking)
@@ -30,11 +30,11 @@ SentryMark is an advanced decentralized application (DApp) built to protect, tra
 
 ### Key Objectives
 
-- **Provenance Tracking**: Implement C2PA (Coalition for Content Provenance and Authenticity) standards for verifiable content authenticity
-- **Asset Protection**: Utilize AI-powered invisible watermarking to protect digital content from unauthorized use
-- **Dispute Resolution**: Provide a blockchain-based dispute management system with transparent arbitration
-- **IP Management**: Track intellectual property lifecycle on Story Protocol blockchain
-- **Decentralized Storage**: Leverage IPFS for distributed, immutable asset storage
+- **Provenance Tracking**: Implement industry-standard C2PA (Coalition for Content Provenance and Authenticity) for cryptographic proof of content origin, ownership, and modification history
+- **Asset Protection**: Utilize AI-powered invisible watermarking to protect digital content from unauthorized use and enable ownership verification
+- **Dispute Resolution**: Provide a transparent blockchain-based dispute management system with decentralized arbitration and on-chain resolution
+- **IP Management**: Track complete intellectual property asset lifecycle on Story Protocol blockchain with immutable records
+- **Decentralized Storage**: Leverage IPFS for distributed, censorship-resistant, and immutable asset storage with content addressing
 
 ---
 
@@ -99,15 +99,72 @@ graph TB
 
 ## Core Features
 
-### 1. C2PA Signing and Detection
+### 1. Provenance Tracking (C2PA)
 
-The C2PA module provides industry-standard content authenticity and provenance tracking for digital assets.
+A comprehensive content authenticity and provenance tracking system implementing C2PA (Coalition for Content Provenance and Authenticity) standards. This feature provides cryptographic proof of content origin, ownership, and modification history, ensuring digital assets maintain verifiable authenticity throughout their lifecycle.
+
+#### Provenance Tracking Architecture
+
+```mermaid
+graph TB
+    subgraph "Content Creation"
+        A[Original Asset]
+        B[Creator Metadata]
+        C[Timestamp]
+    end
+
+    subgraph "C2PA Signing"
+        D[Manifest Generation]
+        E[Certificate Chain]
+        F[Cryptographic Signing]
+    end
+
+    subgraph "Storage Options"
+        G[Local Download]
+        H[IPFS Storage]
+    end
+
+    subgraph "Verification"
+        I[Asset Upload]
+        J[Manifest Extraction]
+        K[Signature Validation]
+        L[Chain of Custody]
+    end
+
+    subgraph "Provenance Display"
+        M[Creator Information]
+        N[Action Timeline]
+        O[Certificate Details]
+        P[Modification History]
+    end
+
+    A --> D
+    B --> D
+    C --> D
+    D --> E
+    E --> F
+    F --> G
+    F --> H
+
+    I --> J
+    J --> K
+    K --> L
+    L --> M
+    L --> N
+    L --> O
+    L --> P
+
+    style D fill:#8b5cf6
+    style F fill:#a78bfa
+    style K fill:#10b981
+    style L fill:#34d399
+```
 
 #### Feature Flow Diagram
 
 ```mermaid
 flowchart LR
-    subgraph "C2PA Embed"
+    subgraph "Provenance Embedding"
         A[Upload Asset] --> B[Enter Metadata]
         B --> C{Choose Action}
         C -->|Local| D[Sign with C2PA]
@@ -116,13 +173,13 @@ flowchart LR
         E --> G[Get IPFS URL]
     end
 
-    subgraph "C2PA Detection"
+    subgraph "Provenance Verification"
         H[Input Source] --> I{Detection Method}
         I -->|File Upload| J[Upload File]
         I -->|URL/IPFS| K[Enter URL]
         J --> L[Validate Manifest]
         K --> M[Fetch & Validate]
-        L --> N[Display Results]
+        L --> N[Display Provenance Chain]
         M --> N
     end
 
@@ -131,57 +188,124 @@ flowchart LR
     style N fill:#10b981
 ```
 
-#### Capabilities
+#### Core Capabilities
 
-**C2PA Embed**
-- Asset signing with cryptographic proof
-- Support for images (JPEG, PNG, GIF, WebP), audio (MP3, WAV), and video (MP4, MOV) files
-- Metadata embedding: title, creator, timestamp, software agent
-- Dual output modes:
-  - Local download of signed asset
-  - IPFS upload with gateway URL generation
-- Certificate chain validation using ES256 algorithm
-- Self-signed certificate support for development
+**Provenance Embedding**
+- **Cryptographic Signing**: Asset signing with certificate-based cryptographic proof
+- **Multi-Format Support**: 
+  - Images: JPEG, PNG, GIF, WebP
+  - Audio: MP3, WAV
+  - Video: MP4, MOV
+- **Rich Metadata**: 
+  - Title and creator information
+  - Creation timestamp
+  - Software agent identification
+  - Custom assertions support
+- **Flexible Output**:
+  - Local download of signed assets
+  - Direct IPFS upload with gateway URL
+  - Automatic filename generation
+- **Certificate Standards**:
+  - ES256 (ECDSA with P-256 and SHA-256) algorithm
+  - X.509 certificate chain validation
+  - Support for self-signed certificates (development)
+  - Production-ready with CA certificates
 
-**C2PA Detection**
-- Multi-source detection:
-  - Direct file upload
-  - IPFS URL (ipfs:// or gateway URLs)
-  - HTTP/HTTPS URLs
-- Comprehensive manifest information display:
-  - Creator information
-  - Action timeline
-  - Signature verification
-  - Certificate details
-  - Claim generator metadata
-- Validation status indicators
-- Warning display for partial validations
+**Provenance Verification**
+- **Multi-Source Detection**:
+  - Direct file upload from local storage
+  - IPFS URLs (ipfs:// protocol or gateway URLs)
+  - HTTP/HTTPS web URLs
+  - Automatic URL normalization
+- **Comprehensive Chain of Custody**:
+  - Creator and ownership information
+  - Complete action timeline with timestamps
+  - Signature verification status
+  - Certificate chain validation
+  - Claim generator identification
+  - Modification history tracking
+- **Validation Reporting**:
+  - Visual validation status indicators
+  - Detailed error and warning messages
+  - Partial validation support
+  - Embedded vs. external manifest detection
+- **Provenance Data Display**:
+  - Manifest information panel
+  - Creator details with verification
+  - Chronological action timeline
+  - Signature and certificate information
+  - Instance ID and label tracking
 
 #### Technical Implementation
 
-**Backend (Node.js + Express)**
+**Backend Architecture (Node.js + Express)**
+
+Signing Endpoint:
 ```
-/api/sign
-├── Accepts: FormData with file, title, creator
-├── Process: C2PA manifest creation
-├── Signs: Using LocalSigner with certificate chain
-└── Returns: Signed asset blob
+POST /api/sign
+├── Input: FormData with file, title, creator, claimGenerator
+├── Process:
+│   ├── File validation and type detection
+│   ├── Manifest JSON generation
+│   ├── Assertion creation (actions, CreativeWork)
+│   ├── Certificate chain loading
+│   └── LocalSigner initialization with ES256
+├── Signing:
+│   ├── C2PA manifest embedding
+│   ├── Cryptographic signature generation
+│   └── Asset modification with provenance data
+└── Output: Signed asset blob with embedded manifest
 ```
 
+Validation Endpoint:
 ```
-/api/validate
-├── Accepts: FormData with file or URL
-├── Process: Manifest extraction and validation
-├── Validates: Signature, certificate chain, timestamps
-└── Returns: Complete manifest JSON with validation status
+POST /api/validate
+├── Input: FormData with file (or URL in future)
+├── Process:
+│   ├── Manifest extraction from asset
+│   ├── Active manifest identification
+│   ├── Signature verification
+│   ├── Certificate chain validation
+│   └── Timestamp verification
+├── Analysis:
+│   ├── Trust anchor validation
+│   ├── OCSP check (if configured)
+│   ├── Validation status compilation
+│   └── Assertion parsing
+└── Output:
+    ├── Complete manifest JSON
+    ├── Validation status object
+    ├── Active manifest details
+    └── Error/warning messages
 ```
 
-**Frontend Flow**
-1. File upload or URL input
-2. Metadata collection (title, creator)
-3. API request to signing endpoint
-4. Optional IPFS upload via Pinata
-5. Result display with download/URL
+**Frontend Workflow**
+
+Embedding Flow:
+1. Asset upload with drag-and-drop or file picker
+2. Metadata form (title, creator)
+3. Output method selection (local/IPFS)
+4. API request to signing endpoint
+5. Response processing (blob or IPFS hash)
+6. UI update with download/IPFS URL
+7. Form reset for next operation
+
+Verification Flow:
+1. Method selection (file upload or URL)
+2. Asset input (file or IPFS/HTTP URL)
+3. URL normalization for IPFS
+4. File fetching (if URL method)
+5. API validation request
+6. Manifest parsing and display
+7. Provenance chain visualization
+8. Input reset for next verification
+
+**Certificate Management**
+- Certificate chain structure: End certificate + Intermediate + Root CA
+- Key storage in secure backend directory
+- Production: CA-issued certificates
+- Development: Self-signed test certificates
+- ES256 algorithm for optimal security/size balance
 
 ---
 
