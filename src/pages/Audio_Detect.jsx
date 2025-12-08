@@ -171,12 +171,12 @@ const Audio_Detect = () => {
     };
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-slate-900 via-purple-900 to-slate-900">
+    <div className="min-h-screen bg-purple-900">
       <Header/>
 
         <div className="text-center my-8">
           <div className="flex items-center justify-center gap-3 mb-4">
-            <h1 className="text-5xl font-bold bg-linear-to-r from-purple-400 via-pink-400 to-blue-400 bg-clip-text text-transparent">
+            <h1 className="text-5xl font-bold bg-pink-400 bg-clip-text text-transparent">
                 C2PA Signing and Detection
             </h1>
           </div>
@@ -202,7 +202,7 @@ const Audio_Detect = () => {
                   }}
                   className={`flex-1 py-3 px-6 rounded-lg font-semibold transition-all ${
                     activeTab === 'embed'
-                      ? 'bg-linear-to-r from-purple-600 to-pink-600 text-white shadow-lg shadow-purple-500/50 scale-105'
+                      ? 'bg-pink-600 text-white scale-105'
                       : 'bg-slate-700/50 text-purple-200 hover:bg-slate-700'
                   }`}
                 >
@@ -216,7 +216,7 @@ const Audio_Detect = () => {
                   }}
                   className={`flex-1 py-3 px-6 rounded-lg font-semibold transition-all ${
                     activeTab === 'c2pa-detect'
-                      ? 'bg-linear-to-r from-purple-600 to-pink-600 text-white shadow-lg shadow-purple-500/50 scale-105'
+                      ? 'bg-pink-600 text-white  scale-105'
                       : 'bg-slate-700/50 text-purple-200 hover:bg-slate-700'
                   }`}
                 >

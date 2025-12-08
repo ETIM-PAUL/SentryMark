@@ -119,7 +119,7 @@ const Onchain_IP_History = () => {
     
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-slate-900 via-purple-900 to-slate-900">
+    <div className="min-h-screen bg-purple-900">
       <Header />
       <Toaster position="top-right" />
       
