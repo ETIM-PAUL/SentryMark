@@ -102,22 +102,21 @@ const Onchain_IP_History = () => {
       });
   };
 
-    const closeTrackingModal = () => {
-      setShowTrackingModal(false);
-      setTrackedAssets([]);
-    };
+  const closeTrackingModal = () => {
+    setShowTrackingModal(false);
+    setTrackedAssets([]);
+  };
 
-    // Pagination helpers
-    const paginateData = (data, page) => {
-      const startIndex = (page - 1) * itemsPerPage;
-      const endIndex = startIndex + itemsPerPage;
-      return data.slice(startIndex, endIndex);
-    };
-  
-    const totalPages = (data) => Math.ceil(data.length / itemsPerPage);
+  // Pagination helpers
+  const paginateData = (data, page) => {
+    const startIndex = (page - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    return data.slice(startIndex, endIndex);
+  };
+
+  const totalPages = (data) => Math.ceil(data.length / itemsPerPage);
 
     
-
   return (
     <div className="min-h-screen bg-linear-to-br from-slate-900 via-purple-900 to-slate-900">
       <Header />
@@ -191,7 +190,7 @@ const Onchain_IP_History = () => {
               <TipsTable tips={assetData.tips} currentPage={tipsPage} setCurrentPage={setTipsPage} paginatedTips={paginateData(assetData.tips, tipsPage)} totalPages={totalPages(assetData.tips)} />
               
               {/* Tips Card - Right (Duplicate) */}
-              <TipsTable tips={assetData.tips} currentPage={tipsPage} setCurrentPage={setTipsPage} paginatedTips={paginateData(assetData.tips, tipsPage)} totalPages={totalPages(assetData.tips)} />
+              {/* <RevenueClaimsTable claims={assetData.revenueClaims} currentPage={revenueClaimsPage} setCurrentPage={setRevenueClaimsPage} paginatedClaims={paginateData(assetData.revenueClaims, revenueClaimsPage)} totalPages={totalPages(assetData.revenueClaims)} /> */}
             </div>
             {/* Metadata and License Cards Row */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
