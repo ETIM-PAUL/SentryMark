@@ -111,14 +111,25 @@ app.post("/api/sign", handleFileUpload, async (req, res) => {
         .status(400)
         .json({ error: "Missing required fields: title, creator" });
 
-    // Temp paths
-    const timestamp = Date.now();
-    const ext = extOf(file.originalname);
+        
+        
+        // Temp paths
+        const timestamp = Date.now();
+        const ext = extOf(file.originalname);
+        
+        inputPath = `${TEMP_DIR}/input_${timestamp}${ext}`;
+        outputPath = `${TEMP_DIR}/output_${timestamp}${ext}`;
+        
+        await fs.writeFile(inputPath, file.buffer);
+        
+        const reader = await Reader.fromAsset({ path: inputPath });
 
-    inputPath = `${TEMP_DIR}/input_${timestamp}${ext}`;
-    outputPath = `${TEMP_DIR}/output_${timestamp}${ext}`;
-
-    await fs.writeFile(inputPath, file.buffer);
+        if (reader) {
+          await fs.unlink(inputPath);
+          return res.status(404).json({
+            error: "Media has existing C2PA signature",
+          });
+        }
 
     // Load static keys (read-only)
     const certPath = path.join(KEYS_DIR, "certificate_chain.pem");
