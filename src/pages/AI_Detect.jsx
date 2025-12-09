@@ -304,30 +304,31 @@ Be thorough in your analysis. If you find patterns that suggest a watermark, des
   };
 
   return (
-  <div className="min-h-screen bg-purple-900 p-8">
-      <div className="max-w-6xl mx-auto">
+  <div className="min-h-screen bg-black p-8">
+      <div className="max-w-4xl mx-auto">
+        
         <div className="text-center mb-8">
-          <div className="flex items-center justify-center gap-3 mb-4">
-            <Brain className="w-12 h-12 text-purple-400 animate-pulse" />
-            <h1 className="text-5xl font-bold bg-blue-400 bg-clip-text text-transparent">
+          <div className="flex text-slate-200 items-center justify-center gap-3 mb-4">
+            <Brain className="w-12 h-12  animate-pulse" />
+            <h1 className="text-5xl font-bold">
               AI-Powered Watermarking
             </h1>
           </div>
-          <p className="text-purple-200 text-sm md:text-lg">AI strategy + Canvas processing = Real watermarks</p>
-          <div className="flex items-center justify-center gap-2 mt-2">
+          <p className="text-slate-400 text-sm md:text-lg">AI strategy + Canvas processing = Real watermarks</p>
+          <div className="flex text-slate-400 items-center justify-center gap-2 mt-2">
             <Zap className="w-4 h-4 text-yellow-400" />
-            <span className="text-xs md:text-sm text-purple-300">AI-guided • Canvas-powered • Fully functional</span>
+            <span className="text-xs md:text-sm text-slate-300">AI-guided • Canvas-powered • Fully functional</span>
           </div>
         </div>
 
-        <div className="bg-slate-800/50 backdrop-blur-xl rounded-2xl shadow-2xl p-8 mb-6 border border-purple-500/20">
+        <div className="bg-slate-800/50 backdrop-blur-xl rounded-2xl shadow-2xl p-8 mb-6 border border-slate-500/20">
           <div className="flex gap-4 mb-8">
             <button
               onClick={() => setMode('embed')}
               className={`flex-1 py-3 px-6 rounded-lg font-semibold transition-all ${
                 mode === 'embed'
-                  ? 'bg-pink-600 text-white shadow-lg  scale-105'
-                  : 'bg-slate-700/50 text-purple-200 hover:bg-slate-700'
+                 ? 'bg-white text-black'
+                      : 'bg-slate-700/50 text-slate-200 hover:bg-slate-700'
               }`}
             >
               <Upload className="inline-block w-5 h-5 mr-2" />
@@ -337,8 +338,8 @@ Be thorough in your analysis. If you find patterns that suggest a watermark, des
               onClick={() => setMode('detect')}
               className={`flex-1 py-3 px-6 rounded-lg font-semibold transition-all ${
                 mode === 'detect'
-                  ? 'bg-pink-600  text-white shadow-lg  scale-105'
-                  : 'bg-slate-700/50 text-purple-200 hover:bg-slate-700'
+                  ? 'bg-white text-black  scale-105'
+                      : 'bg-slate-700/50 text-slate-200 hover:bg-slate-700'
               }`}
             >
               <Eye className="inline-block w-5 h-5 mr-2" />
@@ -356,19 +357,26 @@ Be thorough in your analysis. If you find patterns that suggest a watermark, des
             />
             <button
               onClick={() => fileInputRef.current.click()}
-              className="w-full py-4 border-2 border-dashed border-purple-500/50 rounded-lg hover:border-purple-400 transition-all hover:bg-purple-500/10 bg-slate-700/30"
+              className="w-full py-4 border-2 border-dashed border-slate-500/50 rounded-lg hover:border-slate-400 transition-all hover:bg-slate-500/10 bg-slate-700/30"
             >
-              <Upload className="w-8 h-8 mx-auto mb-2 text-purple-400" />
-              <p className="text-purple-200 font-medium">Click to upload image</p>
-              <p className="text-sm text-purple-300/70 mt-1">PNG, JPG, WEBP up to 10MB</p>
+              <Upload className="w-8 h-8 mx-auto mb-2 text-slate-400" />
+              <p className="text-slate-200 font-medium">Click to upload image</p>
+              <p className="text-sm text-slate-300/70 mt-1">PNG, JPG, WEBP up to 10MB</p>
             </button>
           </div>
+
+          {image && (
+            <div className="bg-slate-800/50 backdrop-blur-xl rounded-xl shadow-lg p-6 border border-slate-500/20 mb-4">
+              <h3 className="text-lg font-semibold text-slate-200 mb-4">Original Image</h3>
+              <img src={image} alt="Original" className="w-[40%] rounded-lg border border-slate-500/30" />
+            </div>
+          )}
 
           {mode === 'embed' && (
             <div className="space-y-4">
               <div>
-                <label className="text-sm font-medium text-purple-200 mb-2 flex items-center gap-2">
-                  <Sparkles className="w-4 h-4 text-purple-400" />
+                <label className="text-sm font-medium text-slate-200 mb-2 flex items-center gap-2">
+                  <Sparkles className="w-4 h-4 text-slate-400" />
                   Watermark Text
                 </label>
                 <input
@@ -376,16 +384,16 @@ Be thorough in your analysis. If you find patterns that suggest a watermark, des
                   value={watermarkText}
                   onChange={(e) => setWatermarkText(e.target.value)}
                   placeholder="Enter text to embed (e.g., © 2024 Your Company)"
-                  className="w-full px-4 py-3 bg-slate-700/50 border border-purple-500/30 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-white placeholder-purple-300/50"
+                  className="w-full px-4 py-3 bg-slate-700/50 border border-slate-500/30 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-transparent text-white placeholder-slate-300/50"
                 />
               </div>
 
-              <div className="p-4 bg-purple-500/10 border border-purple-500/30 rounded-lg">
+              <div className="p-4 bg-slate-500/10 border border-slate-500/30 rounded-lg">
                 <div className="flex items-start gap-3">
-                  <Brain className="w-5 h-5 text-purple-400 mt-0.5" />
-                  <div className="text-sm text-purple-200">
+                  <Brain className="w-5 h-5 text-slate-400 mt-0.5" />
+                  <div className="text-sm text-slate-200">
                     <p className="font-semibold mb-1">AI-Powered Embedding</p>
-                    <p className="text-purple-300/80">Claude will analyze your image and embed the watermark using optimal techniques (LSB, DCT, or hybrid approach).</p>
+                    <p className="text-slate-300/80">Claude will analyze your image and embed the watermark using optimal techniques (LSB, DCT, or hybrid approach).</p>
                   </div>
                 </div>
               </div>
@@ -393,7 +401,7 @@ Be thorough in your analysis. If you find patterns that suggest a watermark, des
               <button
                 onClick={embedWatermarkWithAI}
                 disabled={loading || !image}
-                className="w-full bg-pink-600 text-white py-3 rounded-lg font-semibold hover:from-purple-700 hover:to-pink-700 transition-all disabled:from-slate-600 disabled:to-slate-600 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg shadow-purple-500/30"
+                className="w-full cursor-pointer bg-slate-600 text-white py-3 rounded-lg font-semibold hover:from-slate-700 hover:to-slate-700 transition-all disabled:from-slate-600 disabled:to-slate-600 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg shadow-slate-500/30"
               >
                 {loading ? (
                   <>
@@ -425,7 +433,7 @@ Be thorough in your analysis. If you find patterns that suggest a watermark, des
               <button
                 onClick={detectWatermarkWithAI}
                 disabled={loading || !image}
-                className="w-full bg-pink-600 text-white py-3 rounded-lg font-semibold hover:from-purple-700 hover:to-pink-700 transition-all disabled:from-slate-600 disabled:to-slate-600 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg shadow-purple-500/30"
+                className="w-full bg-pink-600 text-white py-3 rounded-lg font-semibold hover:from-slate-700 hover:to-pink-700 transition-all disabled:from-slate-600 disabled:to-slate-600 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg shadow-slate-500/30"
               >
                 {loading ? (
                   <>
@@ -443,17 +451,17 @@ Be thorough in your analysis. If you find patterns that suggest a watermark, des
           )}
 
           {aiLog.length > 0 && (
-            <div className="mt-6 bg-slate-900/80 rounded-lg p-4 max-h-64 overflow-y-auto border border-purple-500/20">
+            <div className="mt-6 bg-slate-900/80 rounded-lg p-4 max-h-64 overflow-y-auto border border-slate-500/20">
               <div className="flex items-center gap-2 mb-3">
-                <div className="w-2 h-2 bg-purple-400 rounded-full animate-pulse"></div>
-                <p className="text-sm font-mono text-purple-300">AI Processing Log</p>
+                <div className="w-2 h-2 bg-slate-400 rounded-full animate-pulse"></div>
+                <p className="text-sm font-mono text-slate-300">AI Processing Log</p>
               </div>
               {aiLog.map((log, idx) => (
                 <div key={idx} className={`text-xs font-mono mb-1 ${
                   log.type === 'success' ? 'text-green-400' :
                   log.type === 'error' ? 'text-red-400' :
                   log.type === 'warning' ? 'text-yellow-400' :
-                  'text-purple-300'
+                  'text-slate-300'
                 }`}>
                   {log.message}
                 </div>
@@ -463,17 +471,11 @@ Be thorough in your analysis. If you find patterns that suggest a watermark, des
         </div>
 
         <div className="grid md:grid-cols-2 gap-6">
-          {image && (
-            <div className="bg-slate-800/50 backdrop-blur-xl rounded-xl shadow-lg p-6 border border-purple-500/20">
-              <h3 className="text-lg font-semibold text-purple-200 mb-4">Original Image</h3>
-              <img src={image} alt="Original" className="w-full rounded-lg border border-purple-500/30" />
-            </div>
-          )}
 
           {detectionResult && mode === 'embed' && detectionResult.embedded && (
-            <div className="bg-slate-800/50 backdrop-blur-xl rounded-xl shadow-lg p-6 border border-purple-500/20">
+            <div className="bg-slate-800/50 backdrop-blur-xl rounded-xl shadow-lg p-6 border border-slate-500/20">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-purple-200">AI Analysis</h3>
+                <h3 className="text-lg font-semibold text-slate-200">AI Analysis</h3>
                 {watermarkedImage && (
                   <button
                     onClick={downloadImage}
@@ -498,15 +500,15 @@ Be thorough in your analysis. If you find patterns that suggest a watermark, des
 
                 <div className="space-y-3 text-sm">
                   <div className="flex items-center gap-3 p-3 bg-slate-700/30 rounded-lg">
-                    <span className="text-purple-300">Method:</span>
+                    <span className="text-slate-300">Method:</span>
                     <span className="font-semibold text-white">{detectionResult.details.embedding_method}</span>
                   </div>
                   <div className="flex items-center gap-3 p-3 bg-slate-700/30 rounded-lg">
-                    <span className="text-purple-300">Robustness:</span>
+                    <span className="text-slate-300">Robustness:</span>
                     <span className="font-semibold text-white">{detectionResult.details.robustness_score}</span>
                   </div>
                   <div className="p-3 bg-slate-700/30 rounded-lg">
-                    <span className="text-purple-300">Technical Details:</span>
+                    <span className="text-slate-300">Technical Details:</span>
                     <p className="text-white/80 mt-1">{detectionResult.details.technical_details}</p>
                   </div>
                   <div className="p-3 bg-blue-500/10 border border-blue-500/30 rounded-lg">
@@ -519,8 +521,8 @@ Be thorough in your analysis. If you find patterns that suggest a watermark, des
           )}
 
           {detectionResult && mode === 'detect' && !detectionResult.embedded && (
-            <div className="bg-slate-800/50 backdrop-blur-xl rounded-xl shadow-lg p-6 border border-purple-500/20">
-              <h3 className="text-lg font-semibold text-purple-200 mb-4">Detection Results</h3>
+            <div className="bg-slate-800/50 backdrop-blur-xl rounded-xl shadow-lg p-6 border border-slate-500/20">
+              <h3 className="text-lg font-semibold text-slate-200 mb-4">Detection Results</h3>
               
               {detectionResult.watermark_detected ? (
                 <div className="space-y-4">
@@ -548,7 +550,7 @@ Be thorough in your analysis. If you find patterns that suggest a watermark, des
                   </div>
 
                   <div className="p-4 bg-slate-700/30 rounded-lg">
-                    <p className="text-sm text-purple-300 mb-2 font-semibold">AI Analysis:</p>
+                    <p className="text-sm text-slate-300 mb-2 font-semibold">AI Analysis:</p>
                     <p className="text-white/80 text-sm">{detectionResult.analysis}</p>
                   </div>
 
@@ -595,19 +597,19 @@ Be thorough in your analysis. If you find patterns that suggest a watermark, des
           )}
         </div>
 
-        <div className="mt-8 bg-slate-800/50 backdrop-blur-xl rounded-xl shadow-lg p-6 border border-purple-500/20">
-          <h3 className="text-lg font-semibold text-purple-200 mb-4 flex items-center gap-2">
-            <Brain className="w-5 h-5 text-purple-400" />
+        <div className="mt-8 hidden bg-slate-800/50 backdrop-blur-xl rounded-xl shadow-lg p-6 border border-slate-500/20">
+          <h3 className="text-lg font-semibold text-slate-200 mb-4 flex items-center gap-2">
+            <Brain className="w-5 h-5 text-slate-400" />
             How Full AI Implementation Works
           </h3>
           
-          <div className="grid md:grid-cols-2 gap-6 text-sm text-purple-200 mb-6">
-            <div className="p-4 bg-linear-to-br from-purple-500/10 to-pink-500/10 rounded-lg border border-purple-500/20">
+          <div className="grid md:grid-cols-2 gap-6 text-sm text-slate-200 mb-6">
+            <div className="p-4 bg-linear-to-br from-slate-500/10 to-pink-500/10 rounded-lg border border-slate-500/20">
               <h4 className="font-semibold text-white mb-2 flex items-center gap-2">
-                <Upload className="w-4 h-4 text-purple-400" />
+                <Upload className="w-4 h-4 text-slate-400" />
                 AI Embedding Process
               </h4>
-              <ul className="space-y-2 text-purple-300/90 text-xs">
+              <ul className="space-y-2 text-slate-300/90 text-xs">
                 <li>• Claude receives your image via API</li>
                 <li>• Analyzes image properties and complexity</li>
                 <li>• Determines optimal watermarking technique</li>
@@ -647,6 +649,7 @@ Be thorough in your analysis. If you find patterns that suggest a watermark, des
             </div>
           </div>
         </div>
+
       </div>
     </div>
   );

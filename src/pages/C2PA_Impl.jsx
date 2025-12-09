@@ -353,16 +353,16 @@ const C2PA_Impl = () => {
     <div className="min-h-screen pb-16">
       <Header/>
 
-        <div className="text-center text-purple-200 my-8">
+        <div className="text-center my-8">
           <div className="flex items-center justify-center gap-3 mb-4">
-            <h1 className="text-5xl font-bold">
+            <h1 className="text-5xl text-slate-200 font-bold">
                 C2PA Signing and Detection
             </h1>
           </div>
-          <p className="text-xl text-purple-200 mb-3">
+          <p className="text-xl text-slate-200 mb-3">
           Utilizing C2PA to track infringements on the internet
           </p>
-          <div className="flex items-center justify-center gap-2 text-purple-300">
+          <div className="flex text-slate-400 items-center justify-center gap-2 text-slate-400">
             <span className="text-yellow-400">⚡</span>
             <span>C2PA Signed Assets • C2PA Signature Detection</span>
           </div>
@@ -370,7 +370,7 @@ const C2PA_Impl = () => {
 
 
         {/* Content Card */}
-        <div className="max-w-6xl mx-auto bg-slate-800/50 backdrop-blur-xl rounded-2xl shadow-2xl border border-purple-500/20 p-8">
+        <div className="max-w-6xl mx-auto bg-slate-800/50 backdrop-blur-xl rounded-2xl shadow-2xl border border-slate-500/20 p-8">
             <>
               {/* Tab Navigation */}
               <div className="flex gap-4 w-full mb-8">
@@ -382,7 +382,7 @@ const C2PA_Impl = () => {
                   className={`w-full py-3 px-6 rounded-lg font-semibold transition-all cursor-pointer ${
                     activeTab === 'embed'
                       ? 'bg-white text-black'
-                      : 'bg-slate-700/50 text-purple-200 hover:bg-slate-700'
+                      : 'bg-slate-700/50 text-slate-200 hover:bg-slate-700'
                   }`}
                 >
                   <Upload className="inline-block w-5 h-5 mr-2"  />
@@ -396,7 +396,7 @@ const C2PA_Impl = () => {
                   className={`w-full py-3 px-6 rounded-lg font-semibold transition-all cursor-pointer ${
                     activeTab === 'c2pa-detect'
                       ? 'bg-white text-black  scale-105'
-                      : 'bg-slate-700/50 text-purple-200 hover:bg-slate-700'
+                      : 'bg-slate-700/50 text-slate-200 hover:bg-slate-700'
                   }`}
                 >
                   <Eye className="inline-block w-5 h-5 mr-2" />
@@ -417,23 +417,23 @@ const C2PA_Impl = () => {
                   />
                   <div
                     onClick={() => fileInputRef.current?.click()}
-                    className="border-2 border-dashed border-purple-200/50 rounded-xl p-16 mb-6 text-center hover:border-purple-600/70 transition-colors cursor-pointer"
+                    className="border-2 border-dashed border-slate-200/50 rounded-xl p-16 mb-6 text-center hover:border-slate-600/70 transition-colors cursor-pointer"
                   >
                     {uploadedFile ? (
                       <div className="space-y-4">
                         <CheckCircle className="w-12 h-12 text-green-400 mx-auto" />
-                        <p className="text-purple-200 text-lg font-semibold">{uploadedFile.name}</p>
-                        <p className="text-purple-400 text-sm">
+                        <p className="text-slate-200 text-lg font-semibold">{uploadedFile.name}</p>
+                        <p className="text-slate-400 text-sm">
                           {uploadedFile.type} • {(uploadedFile.size / 1024 / 1024).toFixed(2)} MB
                         </p>
-                        <p className="text-purple-400 text-sm">Click to change file</p>
+                        <p className="text-slate-400 text-sm">Click to change file</p>
                       </div>
                     ) : (
                       <>
-                        <Upload className="w-12 h-12 text-purple-400 mx-auto mb-4" />
-                        <p className="text-purple-200 text-lg mb-2">Click to upload your file</p>
-                        <p className="text-purple-400 text-sm">Images • Audio • Video</p>
-                        <p className="text-purple-500 text-xs mt-2">JPG, PNG, MP3, WAV, MP4, MOV</p>
+                        <Upload className="w-12 h-12 text-slate-400 mx-auto mb-4" />
+                        <p className="text-slate-200 text-lg mb-2">Click to upload your file</p>
+                        <p className="text-slate-400 text-sm">Images • Audio • Video</p>
+                        <p className="text-slate-500 text-xs mt-2">JPG, PNG, MP3, WAV, MP4, MOV</p>
                       </>
                     )}
                   </div>
@@ -441,8 +441,8 @@ const C2PA_Impl = () => {
                   {/* Title and Creator Inputs - Show only when file is uploaded */}
                   {uploadedFile && (
                     <div className="space-y-4 mb-6">
-                      <div className="bg-slate-900/30 rounded-lg p-4 border border-purple-700/30">
-                        <label className="text-purple-200 font-semibold mb-2 flex items-center gap-2">
+                      <div className="bg-slate-900/30 rounded-lg p-4 border border-slate-700/30">
+                        <label className="text-slate-200 font-semibold mb-2 flex items-center gap-2">
                           <FileText className="w-4 h-4" />
                           Title
                         </label>
@@ -451,12 +451,12 @@ const C2PA_Impl = () => {
                           value={title}
                           onChange={(e) => setTitle(e.target.value)}
                           placeholder="Please enter a title for the signed asset"
-                          className="w-full bg-slate-800/50 border border-purple-700/50 rounded-lg px-4 py-3 text-purple-100 placeholder-purple-400/50 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
+                          className="w-full bg-slate-800/50 border border-slate-700/50 rounded-lg px-4 py-3 text-slate-100 placeholder-slate-400/50 focus:outline-none focus:border-slate-500 focus:ring-2 focus:ring-slate-500/20 transition-all"
                         />
                       </div>
 
-                      <div className="bg-slate-900/30 rounded-lg p-4 border border-purple-700/30">
-                        <label className="text-purple-200 font-semibold mb-2 flex items-center gap-2">
+                      <div className="bg-slate-900/30 rounded-lg p-4 border border-slate-700/30">
+                        <label className="text-slate-200 font-semibold mb-2 flex items-center gap-2">
                           <User className="w-4 h-4" />
                           Creator
                         </label>
@@ -465,7 +465,7 @@ const C2PA_Impl = () => {
                           value={creator}
                           onChange={(e) => setCreator(e.target.value)}
                           placeholder="Please enter a signed by name"
-                          className="w-full bg-slate-800/50 border border-purple-700/50 rounded-lg px-4 py-3 text-purple-100 placeholder-purple-400/50 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
+                          className="w-full bg-slate-800/50 border border-slate-700/50 rounded-lg px-4 py-3 text-slate-100 placeholder-slate-400/50 focus:outline-none focus:border-slate-500 focus:ring-2 focus:ring-slate-500/20 transition-all"
                         />
                       </div>
                     </div>
@@ -488,7 +488,7 @@ const C2PA_Impl = () => {
                             <CheckCircle className="w-6 h-6 text-green-400" />
                             <h3 className="text-xl font-bold text-green-300">C2PA Manifest Added Successfully!</h3>
                           </div>
-                          <p className="text-purple-200 mb-4">Your file has been signed with C2PA manifest.</p>
+                          <p className="text-slate-200 mb-4">Your file has been signed with C2PA manifest.</p>
                           <a
                             href={result.downloadUrl}
                             download
@@ -504,7 +504,7 @@ const C2PA_Impl = () => {
                             <CheckCircle className="w-6 h-6 text-blue-400" />
                             <h3 className="text-xl font-bold text-blue-300">Uploaded to IPFS!</h3>
                           </div>
-                          <p className="text-purple-200 mb-3">Your file has been signed with C2PA and uploaded to IPFS.</p>
+                          <p className="text-slate-200 mb-3">Your file has been signed with C2PA and uploaded to IPFS.</p>
                           <div className="bg-slate-900/50 rounded-lg p-4 border border-blue-700/30">
                             <p className="text-xs text-blue-400 mb-2">IPFS URL</p>
                             <p className="text-blue-200 font-mono text-sm break-all">{result.ipfsUrl}</p>
@@ -515,12 +515,12 @@ const C2PA_Impl = () => {
                   )}
 
                   {/* Info Card */}
-                  <div className="bg-white rounded-lg p-4 mb-6 border border-purple-700/30">
+                  <div className="bg-white rounded-lg p-4 mb-6 border border-slate-700/30">
                     <div className="flex items-start gap-3">
-                      <Brain className="w-5 h-5 text-purple-400 mt-0.5" />
+                      <Brain className="w-5 h-5 text-slate-400 mt-0.5" />
                       <div>
-                        <h3 className="text-purple-600 font-semibold mb-1">C2PA Infringement Tool</h3>
-                        <p className="text-purple-400 text-sm">
+                        <h3 className="text-slate-600 font-semibold mb-1">C2PA Infringement Tool</h3>
+                        <p className="text-slate-400 text-sm">
                           Using advanced C2PA to sign and read C2PA manifests on assets to track infringements on the internet.
                         </p>
                       </div>
@@ -582,7 +582,7 @@ const C2PA_Impl = () => {
                       value={it.name} className={`flex-1 py-3 px-6 rounded-lg font-semibold transition-all cursor-pointer ${
                         detectMethodOptions.find((de) => de.selected)
                           ? 'text-white shadow-lg'
-                          : 'text-purple-200 hover:bg-slate-700'
+                          : 'text-slate-200 hover:bg-slate-700'
                       }`}/>
                     <label className="text-white text-md">{it.label}</label>
                   </div>
@@ -607,18 +607,18 @@ const C2PA_Impl = () => {
                         {detectFile ? (
                           <div className="space-y-4">
                             <CheckCircle className="w-12 h-12 text-green-400 mx-auto" />
-                            <p className="text-purple-200 text-lg font-semibold">{detectFile.name}</p>
-                            <p className="text-purple-400 text-sm">
+                            <p className="text-slate-200 text-lg font-semibold">{detectFile.name}</p>
+                            <p className="text-slate-400 text-sm">
                               {detectFile.type} • {(detectFile.size / 1024 / 1024).toFixed(2)} MB
                             </p>
-                            <p className="text-purple-400 text-sm">Click to change file</p>
+                            <p className="text-slate-400 text-sm">Click to change file</p>
                           </div>
                         ) : (
                           <>
                             <Eye className="w-12 h-12 text-blue-400 mx-auto mb-4" />
-                            <p className="text-purple-200 text-lg mb-2">Click to upload file for detection</p>
-                            <p className="text-purple-400 text-sm">Images • Audio • Video</p>
-                            <p className="text-purple-500 text-xs mt-2">We'll scan for C2PA manifest data</p>
+                            <p className="text-slate-200 text-lg mb-2">Click to upload file for detection</p>
+                            <p className="text-slate-400 text-sm">Images • Audio • Video</p>
+                            <p className="text-slate-500 text-xs mt-2">We'll scan for C2PA manifest data</p>
                           </>
                         )}
                       </div>
@@ -629,7 +629,7 @@ const C2PA_Impl = () => {
                   {detectMethodOptions[1].selected && (
                     <div className="mb-6">
                       <div className="bg-slate-900/30 rounded-lg p-4 border border-blue-700/30">
-                        <label className="text-purple-200 font-semibold mb-2 flex items-center gap-2">
+                        <label className="text-slate-200 font-semibold mb-2 flex items-center gap-2">
                           <Globe className="w-4 h-4" />
                           Media URL
                         </label>
@@ -638,9 +638,9 @@ const C2PA_Impl = () => {
                           value={detectUrl}
                           onChange={(e) => setDetectUrl(e.target.value)}
                           placeholder="https://example.com/image.jpg or ipfs://..."
-                          className="w-full bg-slate-800/50 border border-blue-700/50 rounded-lg px-4 py-3 text-purple-100 placeholder-purple-400/50 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
+                          className="w-full bg-slate-800/50 border border-blue-700/50 rounded-lg px-4 py-3 text-slate-100 placeholder-slate-400/50 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
                         />
-                        <p className="text-purple-400 text-xs mt-2">
+                        <p className="text-slate-400 text-xs mt-2">
                           Enter direct link to image, audio, or video file
                         </p>
                       </div>
@@ -692,10 +692,10 @@ const C2PA_Impl = () => {
                             <XCircle className="w-8 h-8 text-red-400" />
                           )}
                           <div>
-                            <h3 className="text-2xl font-bold text-purple-100">
+                            <h3 className="text-2xl font-bold text-slate-100">
                               {manifestData.validation?.isValid ? 'Valid C2PA Manifest Found' : 'No Valid Manifest'}
                             </h3>
-                            <p className="text-purple-300 text-sm mt-1">
+                            <p className="text-slate-300 text-sm mt-1">
                               {manifestData.validation?.hasManifest 
                                 ? `Manifest is ${manifestData.validation?.isEmbedded ? 'embedded' : 'external'}`
                                 : 'This file does not contain a C2PA manifest'
@@ -724,28 +724,28 @@ const C2PA_Impl = () => {
                       {manifestData.activeManifest && (
                         <>
                           {/* Basic Info */}
-                          <div className="bg-slate-900/50 rounded-lg p-6 border border-purple-700/30">
-                            <h4 className="text-xl font-bold text-purple-200 mb-4 flex items-center gap-2">
+                          <div className="bg-slate-900/50 rounded-lg p-6 border border-slate-700/30">
+                            <h4 className="text-xl font-bold text-slate-200 mb-4 flex items-center gap-2">
                               <FileText className="w-5 h-5" />
                               Manifest Information
                             </h4>
                             <div className="space-y-3">
                               {manifestData.activeManifest.title && (
                                 <div className="flex items-start gap-3">
-                                  <span className="text-purple-400 font-semibold min-w-[120px]">Title:</span>
-                                  <span className="text-purple-100">{manifestData.activeManifest.title}</span>
+                                  <span className="text-slate-400 font-semibold min-w-[120px]">Title:</span>
+                                  <span className="text-slate-100">{manifestData.activeManifest.title}</span>
                                 </div>
                               )}
                               {manifestData.activeManifest.instance_id && (
                                 <div className="flex items-start gap-3">
-                                  <span className="text-purple-400 font-semibold min-w-[120px]">Instance ID:</span>
-                                  <span className="text-purple-100 font-mono text-sm break-all">{manifestData.activeManifest.instance_id}</span>
+                                  <span className="text-slate-400 font-semibold min-w-[120px]">Instance ID:</span>
+                                  <span className="text-slate-100 font-mono text-sm break-all">{manifestData.activeManifest.instance_id}</span>
                                 </div>
                               )}
                               {manifestData.activeManifest.label && (
                                 <div className="flex items-start gap-3">
-                                  <span className="text-purple-400 font-semibold min-w-[120px]">Label:</span>
-                                  <span className="text-purple-100 font-mono text-xs break-all">{manifestData.activeManifest.label}</span>
+                                  <span className="text-slate-400 font-semibold min-w-[120px]">Label:</span>
+                                  <span className="text-slate-100 font-mono text-xs break-all">{manifestData.activeManifest.label}</span>
                                 </div>
                               )}
                             </div>
@@ -753,8 +753,8 @@ const C2PA_Impl = () => {
 
                           {/* Creator Information */}
                           {manifestData.activeManifest.assertions && (
-                            <div className="bg-slate-900/50 rounded-lg p-6 border border-purple-700/30">
-                              <h4 className="text-xl font-bold text-purple-200 mb-4 flex items-center gap-2">
+                            <div className="bg-slate-900/50 rounded-lg p-6 border border-slate-700/30">
+                              <h4 className="text-xl font-bold text-slate-200 mb-4 flex items-center gap-2">
                                 <User className="w-5 h-5" />
                                 Creator Information
                               </h4>
@@ -764,10 +764,10 @@ const C2PA_Impl = () => {
                                     <div key={index} className="space-y-2">
                                       {assertion.data.author.map((author, idx) => (
                                         <div key={idx} className="flex items-center gap-3">
-                                          <span className="text-purple-400 font-semibold">Name:</span>
-                                          <span className="text-purple-100">{author.name}</span>
+                                          <span className="text-slate-400 font-semibold">Name:</span>
+                                          <span className="text-slate-100">{author.name}</span>
                                           {author['@type'] && (
-                                            <span className="text-purple-300 text-sm">({author['@type']})</span>
+                                            <span className="text-slate-300 text-sm">({author['@type']})</span>
                                           )}
                                         </div>
                                       ))}
@@ -781,8 +781,8 @@ const C2PA_Impl = () => {
 
                           {/* Actions Timeline */}
                           {manifestData.activeManifest.assertions && (
-                            <div className="bg-slate-900/50 rounded-lg p-6 border border-purple-700/30">
-                              <h4 className="text-xl font-bold text-purple-200 mb-4 flex items-center gap-2">
+                            <div className="bg-slate-900/50 rounded-lg p-6 border border-slate-700/30">
+                              <h4 className="text-xl font-bold text-slate-200 mb-4 flex items-center gap-2">
                                 <Clock className="w-5 h-5" />
                                 Actions Timeline
                               </h4>
@@ -791,15 +791,15 @@ const C2PA_Impl = () => {
                                   return (
                                     <div key={index} className="space-y-3">
                                       {assertion.data.actions.map((action, idx) => (
-                                        <div key={idx} className="bg-purple-900/20 rounded-lg p-4 border border-purple-700/20">
+                                        <div key={idx} className="bg-slate-900/20 rounded-lg p-4 border border-slate-700/20">
                                           <div className="flex items-center justify-between mb-2">
-                                            <span className="text-purple-200 font-semibold">{action.action}</span>
-                                            <span className="text-purple-400 text-sm">
+                                            <span className="text-slate-200 font-semibold">{action.action}</span>
+                                            <span className="text-slate-400 text-sm">
                                               {formatDate(action.when)}
                                             </span>
                                           </div>
                                           {action.softwareAgent && (
-                                            <p className="text-purple-300 text-sm">Agent: {action.softwareAgent}</p>
+                                            <p className="text-slate-300 text-sm">Agent: {action.softwareAgent}</p>
                                           )}
                                         </div>
                                       ))}
@@ -813,34 +813,34 @@ const C2PA_Impl = () => {
 
                           {/* Signature Information */}
                           {manifestData.activeManifest.signature_info && (
-                            <div className="bg-slate-900/50 rounded-lg p-6 border border-purple-700/30">
-                              <h4 className="text-xl font-bold text-purple-200 mb-4 flex items-center gap-2">
+                            <div className="bg-slate-900/50 rounded-lg p-6 border border-slate-700/30">
+                              <h4 className="text-xl font-bold text-slate-200 mb-4 flex items-center gap-2">
                                 <Shield className="w-5 h-5" />
                                 Signature Information
                               </h4>
                               <div className="space-y-3">
                                 {manifestData.activeManifest.signature_info.issuer && (
                                   <div className="flex items-start gap-3">
-                                    <span className="text-purple-400 font-semibold min-w-[140px]">Issuer:</span>
-                                    <span className="text-purple-100">{manifestData.activeManifest.signature_info.issuer}</span>
+                                    <span className="text-slate-400 font-semibold min-w-[140px]">Issuer:</span>
+                                    <span className="text-slate-100">{manifestData.activeManifest.signature_info.issuer}</span>
                                   </div>
                                 )}
                                 {manifestData.activeManifest.signature_info.common_name && (
                                   <div className="flex items-start gap-3">
-                                    <span className="text-purple-400 font-semibold min-w-[140px]">Common Name:</span>
-                                    <span className="text-purple-100">{manifestData.activeManifest.signature_info.common_name}</span>
+                                    <span className="text-slate-400 font-semibold min-w-[140px]">Common Name:</span>
+                                    <span className="text-slate-100">{manifestData.activeManifest.signature_info.common_name}</span>
                                   </div>
                                 )}
                                 {manifestData.activeManifest.signature_info.alg && (
                                   <div className="flex items-start gap-3">
-                                    <span className="text-purple-400 font-semibold min-w-[140px]">Algorithm:</span>
-                                    <span className="text-purple-100 font-mono">{manifestData.activeManifest.signature_info.alg}</span>
+                                    <span className="text-slate-400 font-semibold min-w-[140px]">Algorithm:</span>
+                                    <span className="text-slate-100 font-mono">{manifestData.activeManifest.signature_info.alg}</span>
                                   </div>
                                 )}
                                 {manifestData.activeManifest.signature_info.cert_serial_number && (
                                   <div className="flex items-start gap-3">
-                                    <span className="text-purple-400 font-semibold min-w-[140px]">Cert Serial:</span>
-                                    <span className="text-purple-100 font-mono text-xs break-all">{manifestData.activeManifest.signature_info.cert_serial_number}</span>
+                                    <span className="text-slate-400 font-semibold min-w-[140px]">Cert Serial:</span>
+                                    <span className="text-slate-100 font-mono text-xs break-all">{manifestData.activeManifest.signature_info.cert_serial_number}</span>
                                   </div>
                                 )}
                               </div>
@@ -849,20 +849,20 @@ const C2PA_Impl = () => {
 
                           {/* Claim Generator Info */}
                           {manifestData.activeManifest.claim_generator_info && (
-                            <div className="bg-slate-900/50 rounded-lg p-6 border border-purple-700/30">
-                              <h4 className="text-xl font-bold text-purple-200 mb-4 flex items-center gap-2">
+                            <div className="bg-slate-900/50 rounded-lg p-6 border border-slate-700/30">
+                              <h4 className="text-xl font-bold text-slate-200 mb-4 flex items-center gap-2">
                                 <Hash className="w-5 h-5" />
                                 Claim Generator
                               </h4>
                               {manifestData.activeManifest.claim_generator_info.map((gen, index) => (
                                 <div key={index} className="space-y-2">
                                   <div className="flex items-center gap-3">
-                                    <span className="text-purple-400 font-semibold">Name:</span>
-                                    <span className="text-purple-100">{gen.name}</span>
+                                    <span className="text-slate-400 font-semibold">Name:</span>
+                                    <span className="text-slate-100">{gen.name}</span>
                                   </div>
                                   <div className="flex items-center gap-3">
-                                    <span className="text-purple-400 font-semibold">Version:</span>
-                                    <span className="text-purple-100">{gen.version}</span>
+                                    <span className="text-slate-400 font-semibold">Version:</span>
+                                    <span className="text-slate-100">{gen.version}</span>
                                   </div>
                                 </div>
                               ))}

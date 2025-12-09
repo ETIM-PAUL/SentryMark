@@ -281,16 +281,16 @@ const Dispute_Management = () => {
 
   return (
     <ConnectKitProvider theme='midnight'>
-      <div className="min-h-screen bg-purple-900">
+      <div className="min-h-screen">
         <Header />
         <Toaster position="top-right" />
         
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Header Section with Stats */}
           <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mb-12">
             <div className="text-center lg:text-left">
               <div className="flex items-center justify-center lg:justify-start gap-3 mb-4">
-                <Scale className="text-purple-400" size={48} />
+                <Scale className="text-slate-400" size={48} />
                 <h1 className="text-4xl font-bold text-slate-200">Dispute Management</h1>
               </div>
               <p className="text-slate-400 text-lg">Manage and resolve IP disputes on the blockchain</p>
@@ -298,14 +298,14 @@ const Dispute_Management = () => {
 
             {/* Total Disputes Counter */}
             <div>
-              <div className="bg-white-600/20 backdrop-blur-sm rounded-2xl p-6 border border-purple-500/30 shadow-lg hover:shadow-purple-500/20 transition-all">
+              <div className="bg-white-600/20 backdrop-blur-sm rounded-2xl p-6 border border-slate-500/30 shadow-lg hover:shadow-slate-500/20 transition-all">
                 <div className="flex items-center gap-3">
-                  <div className="bg-purple-500/20 p-3 rounded-lg">
-                    <FileText className="text-purple-400" size={28} />
+                  <div className="bg-slate-500/20 p-3 rounded-lg">
+                    <FileText className="text-slate-400" size={28} />
                   </div>
                   <div>
                     <p className="text-slate-400 text-sm">Total Disputes</p>
-                    <p className="text-3xl font-bold text-purple-300">{totalDisputes}</p>
+                    <p className="text-3xl font-bold text-slate-300">{totalDisputes}</p>
                   </div>
                 </div>
             </div>
@@ -314,11 +314,11 @@ const Dispute_Management = () => {
 
           {/* Search Section */}
           <div className="max-w-4xl mx-auto mb-12">
-            <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 border border-purple-500/20 shadow-lg">
+            <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 border border-slate-500/20 shadow-lg">
               {/* Header with Label and Raise Button */}
               <div className="flex items-center justify-between mb-6 gap-4">
                 <label className="flex items-center gap-2 text-slate-300 font-medium">
-                  <Search size={20} className="text-purple-400" />
+                  <Search size={20} className="text-slate-400" />
                   Search Dispute by ID
                 </label>
 
@@ -342,12 +342,12 @@ const Dispute_Management = () => {
                   onChange={(e) => setDisputeId(e.target.value)}
                   onKeyDown={handleKeyPress}
                   placeholder="e.g., 123 or 0x..."
-                  className="flex-1 bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-3 text-slate-200 placeholder-slate-500 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
+                  className="flex-1 bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-3 text-slate-200 placeholder-slate-500 focus:outline-none focus:border-slate-500 focus:ring-2 focus:ring-slate-500/20 transition-all"
                 />
                 <button
                   onClick={handleFetchDispute}
                   disabled={isLoading || !disputeId}
-                  className="bg-linear-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 disabled:from-slate-600 disabled:to-slate-700 text-white px-8 py-3 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 shadow-lg hover:shadow-purple-500/20 disabled:cursor-not-allowed"
+                  className="cursor-pointer bg-linear-to-r from-slate-600 to-black hover:from-slate-700 hover:to-black disabled:from-slate-600 disabled:to-slate-700 text-white px-8 py-3 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 shadow-lg hover:shadow-slate-500/20 disabled:cursor-not-allowed"
                 >
                   <Search size={20} />
                   {isLoading ? 'Fetching...' : 'Fetch'}
@@ -409,7 +409,7 @@ const Dispute_Management = () => {
           {/* Empty State */}
           {!isLoading && !disputeData && (
             <div className="text-center py-20">
-              <Scale className="mx-auto mb-4 text-purple-400/50" size={64} />
+              <Scale className="mx-auto mb-4 text-slate-400/50" size={64} />
               <h2 className="text-2xl font-bold text-slate-300 mb-2">No Dispute Selected</h2>
               <p className="text-slate-500">Enter a Dispute ID above to view its details</p>
             </div>
@@ -478,10 +478,10 @@ const DisputeCard = ({ disputeData, address, onResolve, onSetJudgement, onCounte
   // const isPending = disputeData.status === 'Pending Judgement';
   
   return (
-    <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-8 border border-purple-500/20 shadow-xl hover:shadow-2xl hover:border-purple-500/30 transition-all">
+    <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-8 border border-slate-500/20 shadow-xl hover:shadow-2xl hover:border-slate-500/30 transition-all">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
-          <Shield className="text-purple-400" size={28} />
+          <Shield className="text-slate-400" size={28} />
           <h3 className="text-2xl font-bold text-slate-200">Dispute Details</h3>
         </div>
         <StatusBadge status={disputeData.status} />
@@ -550,9 +550,9 @@ const DisputeCard = ({ disputeData, address, onResolve, onSetJudgement, onCounte
 
       {/* Action Buttons - Only show if status is Pending */}
       {disputeData.status === "resolved" && (
-        <div className="border-t border-purple-500/20 pt-6">
-          <div className="bg-purple-500/10 border border-purple-500/20 rounded-lg p-4 mb-4">
-            <p className="text-purple-300 text-sm font-medium flex items-center gap-2">
+        <div className="border-t border-slate-500/20 pt-6">
+          <div className="bg-slate-500/10 border border-slate-500/20 rounded-lg p-4 mb-4">
+            <p className="text-slate-300 text-sm font-medium flex items-center gap-2">
               <TrendingUp size={16} />
               This dispute has been resolved.
             </p>
@@ -562,9 +562,9 @@ const DisputeCard = ({ disputeData, address, onResolve, onSetJudgement, onCounte
       
 
       {isDisputed(disputeData.currentTag) === "IN_DISPUTE" && (
-        <div className="border-t hidden border-purple-500/20 pt-6">
-          <div className="bg-purple-500/10 border border-purple-500/20 rounded-lg p-4 mb-4">
-            <p className="text-purple-300 text-sm font-medium flex items-center gap-2">
+        <div className="border-t hidden border-slate-500/20 pt-6">
+          <div className="bg-slate-500/10 border border-slate-500/20 rounded-lg p-4 mb-4">
+            <p className="text-slate-300 text-sm font-medium flex items-center gap-2">
               <TrendingUp size={16} />
               This dispute is pending judgement. You can take action below:
             </p>
@@ -594,7 +594,7 @@ const DisputeCard = ({ disputeData, address, onResolve, onSetJudgement, onCounte
       {(disputeData.status === "infringing")
 
        && (
-        <div className="border-t border-purple-500/20 pt-6">
+        <div className="border-t border-slate-500/20 pt-6">
           <div className="bg-slate-900/50 border border-slate-700/50 rounded-lg p-4 text-center">
             <p className="text-slate-400 text-sm">
               This dispute status is <span className="font-semibold text-slate-300">infringed</span> and only action is to resolve it.
@@ -654,7 +654,7 @@ const InfoRow = ({ label, value, fullValue, icon, mono, showFullState }) => {
         {showFullState && fullValue && fullValue.length > 20 && (
           <button
             onClick={() => setShowFull(!showFull)}
-            className="text-purple-400 hover:text-purple-300 text-xs transition-colors"
+            className="text-slate-400 hover:text-slate-300 text-xs transition-colors"
           >
             {showFull ? 'Show less' : 'Show full'}
           </button>
@@ -669,7 +669,7 @@ const InfoRow = ({ label, value, fullValue, icon, mono, showFullState }) => {
         </span>
         <button
           onClick={handleCopy}
-          className="text-purple-400 hover:text-purple-300 transition-colors shrink-0"
+          className="text-slate-400 hover:text-slate-300 transition-colors shrink-0"
           title="Copy to clipboard"
         >
           <FileText size={14} />
@@ -690,9 +690,9 @@ const InfoRow = ({ label, value, fullValue, icon, mono, showFullState }) => {
 const DisputeLoadingSkeleton = () => (
   <div className="space-y-6 animate-fadeIn">
     <div className="text-center mb-8">
-      <div className="inline-flex items-center gap-2 bg-purple-500/10 px-4 py-2 rounded-full border border-purple-500/30">
-        <div className="w-2 h-2 bg-purple-400 rounded-full animate-ping"></div>
-        <p className="text-purple-300 text-sm font-medium">Fetching Dispute Data...</p>
+      <div className="inline-flex items-center gap-2 bg-slate-500/10 px-4 py-2 rounded-full border border-slate-500/30">
+        <div className="w-2 h-2 bg-slate-400 rounded-full animate-ping"></div>
+        <p className="text-slate-300 text-sm font-medium">Fetching Dispute Data...</p>
       </div>
     </div>
 

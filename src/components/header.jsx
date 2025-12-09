@@ -14,7 +14,7 @@ const Header = () => {
   ];
 
   return (
-      <div className="bg-backgroundColor-primary">
+      <div className="bg-gray-500">
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex overflow-x-auto justify-center">
             {tabs.map((tab) => {

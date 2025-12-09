@@ -118,7 +118,7 @@ const Onchain_IP_History = () => {
 
     
   return (
-    <div className="min-h-screen bg-purple-900">
+    <div className="min-h-screen">
       <Header />
       <Toaster position="top-right" />
       
@@ -126,7 +126,7 @@ const Onchain_IP_History = () => {
         {/* Header Section */}
         <div className="text-center mb-12">
           <div className="flex items-center justify-center gap-3 mb-4">
-            <FileText className="text-purple-400" size={48} />
+            <FileText className="text-slate-400" size={48} />
             <h1 className="text-4xl font-bold text-slate-200">Story IP Tracker</h1>
           </div>
           <p className="text-slate-400 text-lg">Track and monitor IP assets registered on STORY protocol.</p>
@@ -134,7 +134,7 @@ const Onchain_IP_History = () => {
 
         {/* Search Section */}
         <div className="max-w-4xl mx-auto mb-12">
-          <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 border border-purple-500/20 shadow-lg">
+          <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 border border-slate-500/20 shadow-lg">
             <label className="block text-slate-300 font-medium mb-3">Enter IP Asset ID</label>
             <div className="flex gap-3">
               <input
@@ -143,12 +143,12 @@ const Onchain_IP_History = () => {
                 onChange={(e) => setAssetId(e.target.value)}
                 onKeyDown={handleKeyPress}
                 placeholder="e.g.,0x70967f61f7770E14d26E0b14A2C698a1e2AC344B"
-                className="flex-1 bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-3 text-slate-200 placeholder-slate-500 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
+                className="flex-1 bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-3 text-slate-200 placeholder-slate-500 focus:outline-none focus:border-slate-500 focus:ring-2 focus:ring-slate-500/20 transition-all"
               />
               <button
                 onClick={handleFetchAsset}
                 disabled={isLoading || !assetId.trim()}
-                className="hiddenbg-linear-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 disabled:from-slate-600 disabled:to-slate-700 text-white px-8 py-3 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 shadow-lg hover:shadow-purple-500/20 disabled:cursor-not-allowed"
+                className="cursor-pointer bg-linear-to-r from-slate-600 to-black hover:from-slate-700 hover:to-black disabled:from-slate-600 disabled:to-slate-700 text-white px-8 py-3 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 shadow-lg hover:shadow-slate-500/20 disabled:cursor-not-allowed"
               >
                 <Search size={20} />
                 {isLoading ? 'Fetching...' : 'Fetch'}
@@ -212,7 +212,7 @@ const Onchain_IP_History = () => {
         {/* Empty State */}
         {!isLoading && !assetData && (
           <div className="text-center py-20">
-            <FileText className="mx-auto mb-4 text-purple-400/50" size={64} />
+            <FileText className="mx-auto mb-4 text-slate-400/50" size={64} />
             <h2 className="text-2xl font-bold text-slate-300 mb-2">No Asset Selected</h2>
             <p className="text-slate-500">Enter an IP Asset ID above to view its details</p>
           </div>
@@ -486,7 +486,7 @@ const MediaDisplay = ({ nftMetadata, mediaLoading, setMediaLoading, handleCheck 
       };
 
       return (
-        <div className="relative w-full h-full min-h-[400px] bg-linear-to-br from-purple-900/40 to-pink-900/40 rounded-lg overflow-hidden flex flex-col items-center justify-center p-8">
+        <div className="relative w-full h-full min-h-[400px] bg-linear-to-br from-slate-900/40 to-pink-900/40 rounded-lg overflow-hidden flex flex-col items-center justify-center p-8">
           {/* Hidden audio element */}
           <audio 
             ref={mediaRef}
@@ -513,20 +513,20 @@ const MediaDisplay = ({ nftMetadata, mediaLoading, setMediaLoading, handleCheck 
             <div className="relative">
               {/* Animated background circles */}
               <div className="absolute inset-0 flex items-center justify-center">
-                <div className="w-32 h-32 bg-purple-500/20 rounded-full animate-ping"></div>
+                <div className="w-32 h-32 bg-slate-500/20 rounded-full animate-ping"></div>
               </div>
               <div className="absolute inset-0 flex items-center justify-center">
-                <div className="w-24 h-24 bg-purple-500/30 rounded-full animate-pulse"></div>
+                <div className="w-24 h-24 bg-slate-500/30 rounded-full animate-pulse"></div>
               </div>
               {/* Music icon */}
-              <div className="relative text-purple-400">
+              <div className="relative text-slate-400">
                 <Music size={80} strokeWidth={1.5} />
               </div>
             </div>
             
             {/* Audio info */}
             <div className="text-center">
-              <p className="text-purple-300 font-medium text-lg">Audio File</p>
+              <p className="text-slate-300 font-medium text-lg">Audio File</p>
               <p className="text-slate-400 text-sm">High Quality Audio</p>
             </div>
 
@@ -568,7 +568,7 @@ const MediaDisplay = ({ nftMetadata, mediaLoading, setMediaLoading, handleCheck 
                 <div className="flex items-center gap-3 flex-1 ml-6">
                   <button 
                     onClick={toggleMute}
-                    className="text-white hover:text-purple-400 transition-colors"
+                    className="text-white hover:text-slate-400 transition-colors"
                   >
                     {isMuted || volume === 0 ? <VolumeX size={20} /> : <Volume2 size={20} />}
                   </button>
@@ -587,7 +587,7 @@ const MediaDisplay = ({ nftMetadata, mediaLoading, setMediaLoading, handleCheck 
                 <div className="relative ml-4 menu-container">
                   <button
                     onClick={() => setShowMenu(!showMenu)}
-                    className="text-white hover:text-purple-400 transition-colors p-2 rounded-full hover:bg-white/10"
+                    className="text-white hover:text-slate-400 transition-colors p-2 rounded-full hover:bg-white/10"
                   >
                     <MoreVertical size={20} />
                   </button>
@@ -625,7 +625,7 @@ const MediaDisplay = ({ nftMetadata, mediaLoading, setMediaLoading, handleCheck 
                           }}
                           className={`w-full text-left px-4 py-2 text-sm transition-colors ${
                             playbackRate === speed
-                              ? 'text-purple-400 bg-slate-700/50'
+                              ? 'text-slate-400 bg-slate-700/50'
                               : 'text-white hover:bg-slate-700'
                           }`}
                         >
@@ -654,30 +654,41 @@ const MediaDisplay = ({ nftMetadata, mediaLoading, setMediaLoading, handleCheck 
   };
 
   return (
-    <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 border border-purple-500/20 shadow-xl hover:shadow-2xl hover:border-purple-500/30 transition-all min-h-[600px]">
+    <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 border border-slate-500/20 shadow-xl hover:shadow-2xl hover:border-slate-500/30 transition-all min-h-[600px]">
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-3">
-          <FileText className="text-purple-400" size={24} />
+          <FileText className="text-slate-400" size={24} />
           <h3 className="text-xl font-bold text-slate-200">Media Preview</h3>
         </div>
+
         <button
           onClick={handleCheck}
-          className="cursor-pointer bg-linear-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 disabled:from-slate-600 disabled:to-slate-700 text-white px-8 py-3 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 shadow-lg hover:shadow-purple-500/20 disabled:cursor-not-allowed"
+          className="cursor-pointer bg-linear-to-r from-slate-600 to-pink-600 hover:from-slate-700 hover:to-pink-700 disabled:from-slate-600 disabled:to-slate-700 text-white px-8 py-3 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 shadow-lg hover:shadow-slate-500/20 disabled:cursor-not-allowed"
         >
           <ScanEye size={20} />
           Internet Track
         </button>
       </div>
       
-      <div className="relative bg-slate-900/50 rounded-lg overflow-hidden min-h-[500px] flex items-center justify-center">
+      <div className="relative bg-black rounded-lg overflow-hidden min-h-[500px] flex items-center justify-center">
         {mediaLoading ? (
           <div className="flex flex-col items-center justify-center space-y-4">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-400"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-400"></div>
             <p className="text-slate-400 text-sm">Loading media...</p>
           </div>
         ) : (
           renderMedia()
         )}
+      </div>
+
+      <div className="flex items-center justify-between mb-2 w-full">
+      <button
+          onClick={handleCheck}
+          className="cursor-pointer w-full mt-2 bg-linear-to-r from-slate-600 to-pink-600 hover:from-slate-700 hover:to-pink-700 disabled:from-slate-600 disabled:to-slate-700 text-white px-8 py-3 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 shadow-lg hover:shadow-slate-500/20 disabled:cursor-not-allowed"
+        >
+          <ScanEye size={20} />
+          Check If IP infringes another IP
+        </button>
       </div>
     </div>
   );
@@ -746,7 +757,7 @@ const MetadataCard = ({ assetData }) => {
             {shouldShowExpandButton && (
               <button
                 onClick={() => toggleMetadataField(field.key)}
-                className="text-purple-400 hover:text-purple-300 text-xs transition-colors flex items-center gap-1"
+                className="text-slate-400 hover:text-slate-300 text-xs transition-colors flex items-center gap-1"
               >
                 {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
                 {isExpanded ? 'Collapse' : 'Expand'}
@@ -754,7 +765,7 @@ const MetadataCard = ({ assetData }) => {
             )}
             <button
               onClick={() => copyToClipboard(fieldValue)}
-              className="text-purple-400 hover:text-purple-300 transition-colors"
+              className="text-slate-400 hover:text-slate-300 transition-colors"
               title="Copy to clipboard"
             >
               <Copy size={14} />
@@ -769,9 +780,9 @@ const MetadataCard = ({ assetData }) => {
   };
 
   return (
-    <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 border border-purple-500/20 shadow-xl hover:shadow-2xl hover:border-purple-500/30 transition-all">
+    <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 border border-slate-500/20 shadow-xl hover:shadow-2xl hover:border-slate-500/30 transition-all">
       <div className="flex items-center gap-3 mb-6">
-        <FileText className="text-purple-400" size={24} />
+        <FileText className="text-slate-400" size={24} />
         <h3 className="text-xl font-bold text-slate-200">Metadata</h3>
       </div>
       
@@ -782,7 +793,7 @@ const MetadataCard = ({ assetData }) => {
         {hasMoreFields && (
           <button
             onClick={() => setShowAllMetadataFields(!showAllMetadataFields)}
-            className="w-full mt-4 py-3 bg-purple-600/20 hover:bg-purple-600/30 border border-purple-500/30 rounded-lg text-purple-300 font-medium transition-all flex items-center justify-center gap-2"
+            className="w-full mt-4 py-3 bg-slate-600/20 hover:bg-slate-600/30 border border-slate-500/30 rounded-lg text-slate-300 font-medium transition-all flex items-center justify-center gap-2"
           >
             {showAllMetadataFields ? (
               <>
@@ -804,16 +815,16 @@ const MetadataCard = ({ assetData }) => {
 
 // Tips Table Component
 const TipsTable = ({ tips, currentPage, setCurrentPage, paginatedTips, totalPages }) => (
-  <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 border border-purple-500/20 shadow-lg">
+  <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 border border-slate-500/20 shadow-lg">
     <div className="flex items-center gap-2 mb-6">
-      <DollarSign className="text-purple-400" size={24} />
+      <DollarSign className="text-slate-400" size={24} />
       <h3 className="text-xl font-bold text-slate-200">Royalty Received</h3>
-      <span className="ml-auto bg-purple-500/20 text-purple-300 px-3 py-1 rounded-full text-sm font-medium">
+      <span className="ml-auto bg-slate-500/20 text-slate-300 px-3 py-1 rounded-full text-sm font-medium">
         {tips.length} Total
       </span>
     </div>
 
-    {/* Table */}
+    {tips.length > 0 ?
     <div className="overflow-x-auto">
       <table className="w-full">
         <thead>
@@ -841,7 +852,7 @@ const TipsTable = ({ tips, currentPage, setCurrentPage, paginatedTips, totalPage
                 </div>
               </td>
               <td className="py-4 px-2">
-                <span className="text-purple-400 font-bold">{tip.amountAfterFee} {getTokenMetadata(tip.receiverIpId)?.symbol}</span>
+                <span className="text-slate-400 font-bold">{tip.amountAfterFee} {getTokenMetadata(tip.receiverIpId)?.symbol}</span>
               </td>
               {/* <td className="py-4 px-2 text-slate-300">{tip.date}</td>
               <td className="py-4 px-2">
@@ -849,7 +860,7 @@ const TipsTable = ({ tips, currentPage, setCurrentPage, paginatedTips, totalPage
                   href={`https://etherscan.io/tx/${tip.transactionHash}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-purple-400 hover:text-purple-300 flex items-center gap-1 text-sm font-mono"
+                  className="text-slate-400 hover:text-slate-300 flex items-center gap-1 text-sm font-mono"
                 >
                   {tip.transactionHash.slice(0, 10)}...
                   <ExternalLink size={12} />
@@ -861,6 +872,11 @@ const TipsTable = ({ tips, currentPage, setCurrentPage, paginatedTips, totalPage
         </tbody>
       </table>
     </div>
+    :
+    <span className="ml-auto bg-slate-500/20 text-slate-300 px-3 py-1 rounded-full text-sm font-medium">
+    No Royalty Received Yet
+    </span>
+    }
 
     {/* Pagination */}
     {/* <Pagination 
@@ -875,11 +891,11 @@ const TipsTable = ({ tips, currentPage, setCurrentPage, paginatedTips, totalPage
 
 // Revenue Claims Table Component
 const RevenueClaimsTable = ({ claims, currentPage, setCurrentPage, paginatedClaims, totalPages }) => (
-  <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 border border-purple-500/20 shadow-lg">
+  <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 border border-slate-500/20 shadow-lg">
     <div className="flex items-center gap-2 mb-6">
-      <TrendingUp className="text-purple-400" size={24} />
+      <TrendingUp className="text-slate-400" size={24} />
       <h3 className="text-xl font-bold text-slate-200">Revenue Claims</h3>
-      <span className="ml-auto bg-purple-500/20 text-purple-300 px-3 py-1 rounded-full text-sm font-medium">
+      <span className="ml-auto bg-slate-500/20 text-slate-300 px-3 py-1 rounded-full text-sm font-medium">
         {claims.length} Total
       </span>
     </div>
@@ -949,9 +965,9 @@ const Pagination = ({ currentPage, totalPages, onPageChange, totalItems }) => {
   const endItem = Math.min(currentPage * itemsPerPage, totalItems);
 
   return (
-    <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 border border-purple-500/20 shadow-xl hover:shadow-2xl hover:border-purple-500/30 transition-all">
+    <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 border border-slate-500/20 shadow-xl hover:shadow-2xl hover:border-slate-500/30 transition-all">
       <div className="flex items-center gap-3 mb-6">
-        <Network className="text-purple-400" size={28} />
+        <Network className="text-slate-400" size={28} />
         <h3 className="text-2xl font-bold text-slate-200">Relationship Stats</h3>
       </div>
       
@@ -963,7 +979,7 @@ const Pagination = ({ currentPage, totalPages, onPageChange, totalItems }) => {
                 <span className={stat.color}>{stat.icon}</span>
                 <span className="text-slate-300 font-medium">{stat.label}</span>
               </div>
-              <span className="text-2xl font-bold text-purple-300">{stat.value}</span>
+              <span className="text-2xl font-bold text-slate-300">{stat.value}</span>
             </div>
           </div>
         ))}
@@ -1028,7 +1044,7 @@ const LicenseDetailsCard = ({ license, licenseCount }) => {
             {shouldShowExpandButton && (
               <button
                 onClick={() => toggleLicenseField(key)}
-                className="text-purple-400 hover:text-purple-300 text-xs transition-colors flex items-center gap-1"
+                className="text-slate-400 hover:text-slate-300 text-xs transition-colors flex items-center gap-1"
               >
                 {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
                 {isExpanded ? 'Collapse' : 'Expand'}
@@ -1036,7 +1052,7 @@ const LicenseDetailsCard = ({ license, licenseCount }) => {
             )}
             <button
               onClick={() => copyToClipboard(fieldValue)}
-              className="text-purple-400 hover:text-purple-300 transition-colors"
+              className="text-slate-400 hover:text-slate-300 transition-colors"
               title="Copy to clipboard"
             >
               <Copy size={14} />
@@ -1086,9 +1102,9 @@ const LicenseDetailsCard = ({ license, licenseCount }) => {
   const hasMoreFields = validFields.length > 0;
 
   return (
-    <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 border border-purple-500/20 shadow-xl hover:shadow-2xl hover:border-purple-500/30 transition-all">
+    <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 border border-slate-500/20 shadow-xl hover:shadow-2xl hover:border-slate-500/30 transition-all">
       <div className="flex items-center gap-3 mb-6">
-        <Shield className="text-purple-400" size={24} />
+        <Shield className="text-slate-400" size={24} />
         <h3 className="text-xl font-bold text-slate-200">License Details</h3>
       </div>
       
@@ -1112,7 +1128,7 @@ const LicenseDetailsCard = ({ license, licenseCount }) => {
         {hasMoreFields && (
           <button
             onClick={() => setShowAllLicenseFields(!showAllLicenseFields)}
-            className="w-full mt-4 py-3 bg-purple-600/20 hover:bg-purple-600/30 border border-purple-500/30 rounded-lg text-purple-300 font-medium transition-all flex items-center justify-center gap-2"
+            className="w-full mt-4 py-3 bg-slate-600/20 hover:bg-slate-600/30 border border-slate-500/30 rounded-lg text-slate-300 font-medium transition-all flex items-center justify-center gap-2"
           >
             {showAllLicenseFields ? (
               <>
