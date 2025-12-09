@@ -304,12 +304,12 @@ Be thorough in your analysis. If you find patterns that suggest a watermark, des
   };
 
   return (
-  <div className="min-h-screen bg-linear-to-br from-slate-900 via-purple-900 to-slate-900 p-8">
+  <div className="min-h-screen bg-purple-900 p-8">
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-3 mb-4">
             <Brain className="w-12 h-12 text-purple-400 animate-pulse" />
-            <h1 className="text-5xl font-bold bg-linear-to-r from-purple-400 via-pink-400 to-blue-400 bg-clip-text text-transparent">
+            <h1 className="text-5xl font-bold bg-blue-400 bg-clip-text text-transparent">
               AI-Powered Watermarking
             </h1>
           </div>
@@ -326,7 +326,7 @@ Be thorough in your analysis. If you find patterns that suggest a watermark, des
               onClick={() => setMode('embed')}
               className={`flex-1 py-3 px-6 rounded-lg font-semibold transition-all ${
                 mode === 'embed'
-                  ? 'bg-linear-to-r from-purple-600 to-pink-600 text-white shadow-lg shadow-purple-500/50 scale-105'
+                  ? 'bg-pink-600 text-white shadow-lg  scale-105'
                   : 'bg-slate-700/50 text-purple-200 hover:bg-slate-700'
               }`}
             >
@@ -337,7 +337,7 @@ Be thorough in your analysis. If you find patterns that suggest a watermark, des
               onClick={() => setMode('detect')}
               className={`flex-1 py-3 px-6 rounded-lg font-semibold transition-all ${
                 mode === 'detect'
-                  ? 'bg-linear-to-r from-purple-600 to-pink-600 text-white shadow-lg shadow-purple-500/50 scale-105'
+                  ? 'bg-pink-600  text-white shadow-lg  scale-105'
                   : 'bg-slate-700/50 text-purple-200 hover:bg-slate-700'
               }`}
             >
@@ -393,7 +393,7 @@ Be thorough in your analysis. If you find patterns that suggest a watermark, des
               <button
                 onClick={embedWatermarkWithAI}
                 disabled={loading || !image}
-                className="w-full bg-linear-to-r from-purple-600 to-pink-600 text-white py-3 rounded-lg font-semibold hover:from-purple-700 hover:to-pink-700 transition-all disabled:from-slate-600 disabled:to-slate-600 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg shadow-purple-500/30"
+                className="w-full bg-pink-600 text-white py-3 rounded-lg font-semibold hover:from-purple-700 hover:to-pink-700 transition-all disabled:from-slate-600 disabled:to-slate-600 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg shadow-purple-500/30"
               >
                 {loading ? (
                   <>
@@ -425,7 +425,7 @@ Be thorough in your analysis. If you find patterns that suggest a watermark, des
               <button
                 onClick={detectWatermarkWithAI}
                 disabled={loading || !image}
-                className="w-full bg-linear-to-r from-purple-600 to-pink-600 text-white py-3 rounded-lg font-semibold hover:from-purple-700 hover:to-pink-700 transition-all disabled:from-slate-600 disabled:to-slate-600 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg shadow-purple-500/30"
+                className="w-full bg-pink-600 text-white py-3 rounded-lg font-semibold hover:from-purple-700 hover:to-pink-700 transition-all disabled:from-slate-600 disabled:to-slate-600 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg shadow-purple-500/30"
               >
                 {loading ? (
                   <>

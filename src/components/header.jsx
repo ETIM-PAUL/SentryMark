@@ -14,9 +14,7 @@ const Header = () => {
   ];
 
   return (
-    <div className="bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
-      {/* Tab Navigation */}
-      <div className="bg-slate-900/50 backdrop-blur-sm border-b border-purple-500/20">
+      <div className="bg-backgroundColor-primary">
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex overflow-x-auto justify-center">
             {tabs.map((tab) => {
@@ -27,8 +25,8 @@ const Header = () => {
                   to={tab.href}
                   className={({ isActive, isPending }) => `flex cursor-pointer items-center gap-2 px-6 py-4 text-sm font-medium whitespace-nowrap transition-all ${
                     isActive
-                      ? 'text-purple-300 border-b-2 border-purple-400 bg-purple-900/20'
-                      : 'text-slate-400 hover:text-purple-300 hover:bg-purple-900/10'
+                      ? 'text-white border-b-2 border-white bg-gray-500'
+                      : 'text-gray-400 hover:text-white hover:bg-gray-500'
                   }`}
                 >
                   <Icon size={18} />
@@ -39,8 +37,6 @@ const Header = () => {
           </div>
         </div>
       </div>
-
-    </div>
   );
 };
 

@@ -281,7 +281,7 @@ const Dispute_Management = () => {
 
   return (
     <ConnectKitProvider theme='midnight'>
-      <div className="min-h-screen bg-linear-to-br from-slate-900 via-purple-900 to-slate-900">
+      <div className="min-h-screen bg-purple-900">
         <Header />
         <Toaster position="top-right" />
         
@@ -298,7 +298,7 @@ const Dispute_Management = () => {
 
             {/* Total Disputes Counter */}
             <div>
-              <div className="bg-linear-to-br from-purple-600/20 to-pink-600/20 backdrop-blur-sm rounded-2xl p-6 border border-purple-500/30 shadow-lg hover:shadow-purple-500/20 transition-all">
+              <div className="bg-white-600/20 backdrop-blur-sm rounded-2xl p-6 border border-purple-500/30 shadow-lg hover:shadow-purple-500/20 transition-all">
                 <div className="flex items-center gap-3">
                   <div className="bg-purple-500/20 p-3 rounded-lg">
                     <FileText className="text-purple-400" size={28} />
@@ -325,7 +325,7 @@ const Dispute_Management = () => {
                 <div className='flex gap-2'>
                   <button
                     onClick={() => {address === undefined ? toast.error("Please connect your wallet") : setShowRaiseModal(true)}}
-                    className="cursor-pointer bg-linear-to-r from-yellow-600 to-yellow-500 hover:from-yellow-700 hover:to-yellow-600 text-white py-2.5 px-5 rounded-lg font-semibold transition-all shadow-lg hover:shadow-yellow-500/30 flex items-center gap-2 whitespace-nowrap"
+                    className="cursor-pointer bg-yellow-500 hover:from-yellow-700 hover:to-yellow-300 text-white py-2.5 px-5 rounded-lg font-semibold transition-all shadow-lg hover:shadow-yellow-500/30 flex items-center gap-2 whitespace-nowrap"
                   >
                     <AlertTriangle size={18} />
                     Raise Dispute

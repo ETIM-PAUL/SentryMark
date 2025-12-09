@@ -12,7 +12,7 @@ import {
 } from '../components/C2PA';
 import { uploadFileToIPFS, formatDate } from '../utils';
 
-const Audio_Detect = () => {
+const C2PA_Impl = () => {
     const [activeTab, setActiveTab] = useState('embed');
     const [uploadedFile, setUploadedFile] = useState(null);
     const [title, setTitle] = useState('');
@@ -50,17 +50,17 @@ const Audio_Detect = () => {
 
     const handleAddC2PA = async (shouldUploadToIPFS = false) => {
       if (!uploadedFile) {
-        setError('Please upload a file first');
+        setError('Please upload a file to sign');
         return;
       }
 
       if (!title.trim()) {
-        setError('Please enter a title');
+        setError('Please enter a title for the signed asset');
         return;
       }
 
       if (!creator.trim()) {
-        setError('Please enter a creator name');
+        setError('Please enter a signed by name');
         return;
       }
 
@@ -331,13 +331,31 @@ const Audio_Detect = () => {
       }
     };
 
+    const [detectMethodOptions, setDetectMethodOptions] = useState([
+    { id: 1, name: "File", selected: true, label: "Upload File" },
+    { id: 2, name: "Url", selected: false, label: "Use Url" }
+  ]);
+
+  const toggleDetectMethods = (id) => {
+    setDetectMethodOptions((prev) =>
+      prev.map((methodSelected) => {
+        if (methodSelected.id === id) {
+          // If clicked again, unselect it
+          return { ...methodSelected, selected: !methodSelected.selected };
+        }
+        // Unselect all others
+        return { ...methodSelected, selected: false };
+      })
+    );
+  };
+
   return (
-    <div className="min-h-screen bg-linear-to-br from-slate-900 via-purple-900 to-slate-900">
+    <div className="min-h-screen pb-16">
       <Header/>
 
-        <div className="text-center my-8">
+        <div className="text-center text-purple-200 my-8">
           <div className="flex items-center justify-center gap-3 mb-4">
-            <h1 className="text-5xl font-bold bg-linear-to-r from-purple-400 via-pink-400 to-blue-400 bg-clip-text text-transparent">
+            <h1 className="text-5xl font-bold">
                 C2PA Signing and Detection
             </h1>
           </div>
@@ -346,24 +364,24 @@ const Audio_Detect = () => {
           </p>
           <div className="flex items-center justify-center gap-2 text-purple-300">
             <span className="text-yellow-400">⚡</span>
-            <span>C2PA Signed Assets • C2PA Signature Detection • Fully functional</span>
+            <span>C2PA Signed Assets • C2PA Signature Detection</span>
           </div>
         </div>
 
 
         {/* Content Card */}
-        <div className="max-w-6xl mx-auto bg-slate-800/50 backdrop-blur-xl rounded-2xl shadow-2xl mb-6 border border-purple-500/20 p-8">
+        <div className="max-w-6xl mx-auto bg-slate-800/50 backdrop-blur-xl rounded-2xl shadow-2xl border border-purple-500/20 p-8">
             <>
               {/* Tab Navigation */}
-              <div className="flex gap-4 mb-8">
+              <div className="flex gap-4 w-full mb-8">
                 <button
                   onClick={() => {
                     setActiveTab('embed');
                     setResult(null);
                   }}
-                  className={`flex-1 py-3 px-6 rounded-lg font-semibold transition-all cursor-pointer ${
+                  className={`w-full py-3 px-6 rounded-lg font-semibold transition-all cursor-pointer ${
                     activeTab === 'embed'
-                      ? 'bg-linear-to-r from-purple-600 to-pink-600 text-white shadow-lg shadow-purple-500/50 scale-105'
+                      ? 'bg-white text-black'
                       : 'bg-slate-700/50 text-purple-200 hover:bg-slate-700'
                   }`}
                 >
@@ -375,9 +393,9 @@ const Audio_Detect = () => {
                     setActiveTab('c2pa-detect');
                     setResult(null);
                   }}
-                  className={`flex-1 py-3 px-6 rounded-lg font-semibold transition-all cursor-pointer ${
+                  className={`w-full py-3 px-6 rounded-lg font-semibold transition-all cursor-pointer ${
                     activeTab === 'c2pa-detect'
-                      ? 'bg-linear-to-r from-purple-600 to-pink-600 text-white shadow-lg shadow-purple-500/50 scale-105'
+                      ? 'bg-white text-black  scale-105'
                       : 'bg-slate-700/50 text-purple-200 hover:bg-slate-700'
                   }`}
                 >
@@ -399,7 +417,7 @@ const Audio_Detect = () => {
                   />
                   <div
                     onClick={() => fileInputRef.current?.click()}
-                    className="border-2 border-dashed border-purple-700/50 rounded-xl p-16 mb-6 text-center hover:border-purple-600/70 transition-colors cursor-pointer"
+                    className="border-2 border-dashed border-purple-200/50 rounded-xl p-16 mb-6 text-center hover:border-purple-600/70 transition-colors cursor-pointer"
                   >
                     {uploadedFile ? (
                       <div className="space-y-4">
@@ -432,7 +450,7 @@ const Audio_Detect = () => {
                           type="text"
                           value={title}
                           onChange={(e) => setTitle(e.target.value)}
-                          placeholder="Enter asset title..."
+                          placeholder="Please enter a title for the signed asset"
                           className="w-full bg-slate-800/50 border border-purple-700/50 rounded-lg px-4 py-3 text-purple-100 placeholder-purple-400/50 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
                         />
                       </div>
@@ -446,7 +464,7 @@ const Audio_Detect = () => {
                           type="text"
                           value={creator}
                           onChange={(e) => setCreator(e.target.value)}
-                          placeholder="Enter creator name..."
+                          placeholder="Please enter a signed by name"
                           className="w-full bg-slate-800/50 border border-purple-700/50 rounded-lg px-4 py-3 text-purple-100 placeholder-purple-400/50 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
                         />
                       </div>
@@ -497,25 +515,25 @@ const Audio_Detect = () => {
                   )}
 
                   {/* Info Card */}
-                  <div className="bg-purple-900/30 rounded-lg p-4 mb-6 border border-purple-700/30">
+                  <div className="bg-white rounded-lg p-4 mb-6 border border-purple-700/30">
                     <div className="flex items-start gap-3">
                       <Brain className="w-5 h-5 text-purple-400 mt-0.5" />
                       <div>
-                        <h3 className="text-purple-200 font-semibold mb-1">C2PA Infringement Tool</h3>
-                        <p className="text-purple-300 text-sm">
-                          Identifies copyrighted audio, images, and videos using advanced C2PA.
+                        <h3 className="text-purple-600 font-semibold mb-1">C2PA Infringement Tool</h3>
+                        <p className="text-purple-400 text-sm">
+                          Using advanced C2PA to sign and read C2PA manifests on assets to track infringements on the internet.
                         </p>
                       </div>
                     </div>
                   </div>
 
                   {/* Action Buttons - Show only when file and inputs are filled */}
-                  {uploadedFile && title && creator && (
+
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <button
                         onClick={() => handleAddC2PA(false)}
-                        disabled={processing}
-                        className="bg-green-700 hover:bg-green-800 disabled:bg-slate-600 disabled:cursor-not-allowed cursor-pointer text-white font-semibold py-4 rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg hover:shadow-green-500/50"
+                        disabled={processing || !uploadedFile || !title || !creator}
+                        className="bg-white hover:bg-gray-200 disabled:bg-slate-600 disabled:cursor-not-allowed cursor-pointer text-black font-semibold py-4 rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg"
                       >
                         {processing && processingType === 'local' ? (
                           <>
@@ -532,8 +550,8 @@ const Audio_Detect = () => {
 
                       <button
                         onClick={() => handleAddC2PA(true)}
-                        disabled={processing}
-                        className="bg-blue-700 hover:bg-blue-800 disabled:bg-slate-600 disabled:cursor-not-allowed cursor-pointer text-white font-semibold py-4 rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg hover:shadow-blue-500/50"
+                        disabled={processing || !uploadedFile || !title || !creator}
+                        className="bg-gray-200 hover:bg-gray-400 disabled:bg-slate-600 disabled:cursor-not-allowed cursor-pointer text-black font-semibold py-4 rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg"
                       >
                         {processing && processingType === 'ipfs' ? (
                           <>
@@ -548,49 +566,32 @@ const Audio_Detect = () => {
                         )}
                       </button>
                     </div>
-                  )}
                 </>
               )}
 
               {/* Detect Copyright Tab Content */}
               {activeTab === 'c2pa-detect' && (
                 <>
-                  {/* Detection Method Toggle */}
-                  <div className="flex gap-3 mb-6">
-                    <button
-                      onClick={() => {
-                        setDetectMethod('file');
-                        setManifestData(null);
-                        setDetectError(null);
-                      }}
-                      className={`flex-1 py-3 px-6 rounded-lg font-semibold transition-all cursor-pointer ${
-                        detectMethod === 'file'
-                          ? 'bg-blue-600 text-white shadow-lg'
-                          : 'bg-slate-700/50 text-purple-200 hover:bg-slate-700'
-                      }`}
-                    >
-                      <Upload className="inline-block w-4 h-4 mr-2" />
-                      Upload File
-                    </button>
-                    <button
-                      onClick={() => {
-                        setDetectMethod('url');
-                        setManifestData(null);
-                        setDetectError(null);
-                      }}
-                      className={`flex-1 py-3 px-6 rounded-lg font-semibold transition-all cursor-pointer ${
-                        detectMethod === 'url'
-                          ? 'bg-blue-600 text-white shadow-lg'
-                          : 'bg-slate-700/50 text-purple-200 hover:bg-slate-700'
-                      }`}
-                    >
-                      <Globe className="inline-block w-4 h-4 mr-2" />
-                      Use URL
-                    </button>
+
+                <div className='flex mb-3 gap-4'>
+                {detectMethodOptions.map((it) => 
+                  <div key={it.id} className='flex justify-center gap-2'>
+                    <input type='checkbox'
+                    checked={it.selected}
+                    onChange={() => toggleDetectMethods(it.id)}
+                      value={it.name} className={`flex-1 py-3 px-6 rounded-lg font-semibold transition-all cursor-pointer ${
+                        detectMethodOptions.find((de) => de.selected)
+                          ? 'text-white shadow-lg'
+                          : 'text-purple-200 hover:bg-slate-700'
+                      }`}/>
+                    <label className="text-white text-md">{it.label}</label>
                   </div>
+                )}
+                </div>
+
 
                   {/* File Upload Area for Detection */}
-                  {detectMethod === 'file' && (
+                  {detectMethodOptions[0].selected && (
                     <>
                       <input
                         ref={detectFileInputRef}
@@ -625,7 +626,7 @@ const Audio_Detect = () => {
                   )}
 
                   {/* URL Input Area */}
-                  {detectMethod === 'url' && (
+                  {detectMethodOptions[1].selected && (
                     <div className="mb-6">
                       <div className="bg-slate-900/30 rounded-lg p-4 border border-blue-700/30">
                         <label className="text-purple-200 font-semibold mb-2 flex items-center gap-2">
@@ -647,12 +648,11 @@ const Audio_Detect = () => {
                   )}
 
                   {/* Detect Button */}
-                  {((detectMethod === 'file' && detectFile) || (detectMethod === 'url' && detectUrl.trim())) && (
                     <div className="mb-6">
                       <button
                         onClick={handleDetectManifest}
                         disabled={detecting}
-                        className="w-full bg-blue-700 hover:bg-blue-800 disabled:bg-slate-600 disabled:cursor-not-allowed cursor-pointer text-white font-semibold py-4 rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg hover:shadow-blue-500/50"
+                        className="w-full bg-white hover:bg-gray-200 disabled:bg-slate-600 disabled:cursor-not-allowed cursor-pointer text-black font-semibold py-4 rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg hover:shadow-gray-500/50"
                       >
                         {detecting ? (
                           <>
@@ -667,7 +667,6 @@ const Audio_Detect = () => {
                         )}
                       </button>
                     </div>
-                  )}
 
                   {/* Error Message */}
                   {detectError && (
@@ -881,4 +880,4 @@ const Audio_Detect = () => {
   )
 }
 
-export default Audio_Detect
+export default C2PA_Impl

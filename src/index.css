@@ -1,5 +1,9 @@
 @import "tailwindcss";
 
+body {
+  background-color: #000;
+}
+
 /* Animations */
 @keyframes fadeIn {
   from {
