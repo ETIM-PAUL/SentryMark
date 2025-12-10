@@ -53,7 +53,7 @@ export const InfringingModal = ({ infringeResult }) => {
                   <span className="text-slate-400 font-mono text-xs">{infringe.isInfringing ? "True" : "False"}</span>
                 </td>
                 <td className="py-4 px-2">
-                  <span className="text-slate-400 font-mono text-xs">{infringe.infringementDetails === "[]" ? "N/A" : infringe.infringementDetails}</span>
+                  <span className="text-slate-400 font-mono text-xs">{(infringe.infringementDetails === "[]" || infringe.infringementDetails === "") ? "N/A" : infringe.infringementDetails}</span>
                 </td>
                 <td className="py-4 px-2">
                   <span className="text-slate-400 font-mono text-xs">{formatDate(infringe.createdAt)}</span>

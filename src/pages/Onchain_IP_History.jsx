@@ -261,6 +261,7 @@ const MediaDisplay = ({ nftMetadata, mediaLoading, setMediaLoading, handleCheck 
 
   // Extract media info from nftMetadata
   const getMediaInfo = () => {
+    console.log("nft", nftMetadata);
     if (!nftMetadata) 
     {
       setMediaLoading(false);
@@ -280,13 +281,13 @@ const MediaDisplay = ({ nftMetadata, mediaLoading, setMediaLoading, handleCheck 
     }
 
     // Priority 2: Check image field (for images) - prefer cachedUrl over originalUrl
-    if (nftMetadata.image?.contentType) {
+    if (nftMetadata.image?.contentType || nftMetadata.image.originalUrl) {
       const url = nftMetadata.image.cachedUrl || nftMetadata.image.originalUrl;
       setMediaLoading(false);
       if (url) {
         return {
           url: url,
-          type: nftMetadata.image.contentType
+          type: "image"
         };
       }
     }
@@ -342,10 +343,6 @@ const MediaDisplay = ({ nftMetadata, mediaLoading, setMediaLoading, handleCheck 
         <div className="flex flex-col items-center justify-center h-full text-slate-400 space-y-4">
           <FileText size={64} className="opacity-50" />
           <p className="ml-4 text-lg">No media available</p>
-          <div className="text-xs text-red-400 bg-red-900/20 p-4 rounded">
-            <p>Debug: URL is {originalURL === null ? 'null' : originalURL === undefined ? 'undefined' : 'empty'}</p>
-            <p>Type: {contentType || 'N/A'}</p>
-          </div>
         </div>
       );
     }

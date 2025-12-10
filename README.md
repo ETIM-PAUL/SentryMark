@@ -1,16 +1,18 @@
 # SentryMark
 
-**A Comprehensive Decentralized Application for Intellectual Property Asset Management, Tracking, and Enforcement**
+### Mark. Monitor. Enforce
+
+**A Comprehensive Application for Intellectual Property Asset Management, Tracking, and Enforcement**
 
 ## Table of Contents
 
 - [Overview](#overview)
 - [Architecture](#architecture)
 - [Core Features](#core-features)
-  - [1. Provenance Tracking (C2PA)](#1-provenance-tracking-c2pa)
+  - [1. C2PA Manifest Embeding and Detection](#1-provenance-tracking-c2pa)
   - [2. AI Watermark Protection](#2-ai-watermark-protection)
   - [3. Dispute Management System](#3-dispute-management-system)
-  - [4. On-Chain IP History Tracking](#4-on-chain-ip-history-tracking)
+  - [4. On-Chain IP Info and Internet Tracking](#4-on-chain-ip-history-tracking)
 - [Technology Stack](#technology-stack)
 - [System Architecture](#system-architecture)
 - [Installation](#installation)
@@ -25,14 +27,14 @@
 
 ## Overview
 
-SentryMark is an advanced decentralized application (DApp) built to protect, track, and enforce intellectual property rights using blockchain technology, C2PA standards, AI-powered watermarking, and comprehensive dispute management systems. The platform provides creators, artists, and IP owners with tools to secure their digital assets, monitor unauthorized usage, and resolve disputes through a transparent blockchain-based system.
+SentryMark is an advanced decentralized application (Dapp) built to protect, track, and enforce intellectual property rights using blockchain technology, C2PA standards, AI-powered watermarking, and comprehensive dispute management systems. The platform provides creators, artists, and IP owners with tools to secure their digital assets, monitor unauthorized usage on the internet, and resolve disputes through a transparent blockchain-based system.
 
 ### Key Objectives
 
-- **Provenance Tracking**: Implement industry-standard C2PA (Coalition for Content Provenance and Authenticity) for cryptographic proof of content origin, ownership, and modification history
-- **Asset Protection**: Utilize AI-powered invisible watermarking to protect digital content from unauthorized use and enable ownership verification
+- **C2PA Enforcement**: Implement industry-standard C2PA (Coalition for Content Provenance and Authenticity) for cryptographic proof of content origin, ownership, and modification history (images, audios, videos, documents, etc)
+- **AI Asset Protection**: Utilize AI-powered invisible watermarking to protect digital content from unauthorized use and enable ownership verification
 - **Dispute Resolution**: Provide a transparent blockchain-based dispute management system with decentralized arbitration and on-chain resolution
-- **IP Management**: Track complete intellectual property asset lifecycle on Story Protocol blockchain with immutable records
+- **IP Management**: Track complete intellectual property asset lifecycle on Story Aeneid Protocol blockchain with immutable records (creator, revenue generated, infringements, associated licenses, traits, internet tracking, lifecycle)
 - **Decentralized Storage**: Leverage IPFS for distributed, censorship-resistant, and immutable asset storage with content addressing
 
 ---
@@ -43,10 +45,10 @@ SentryMark is an advanced decentralized application (DApp) built to protect, tra
 graph TB
     subgraph "Frontend Layer"
         A[React Application]
-        A1[C2PA Interface]
-        A2[AI Watermark UI]
+        A1[C2PA Sign and Detection]
+        A2[AI URI]
         A3[Dispute Management]
-        A4[IP History Dashboard]
+        A4[IP History and Tracking Dashboard]
     end
 
     subgraph "Backend Services"
@@ -59,8 +61,9 @@ graph TB
     subgraph "Blockchain Layer"
         C[Story Protocol]
         C1[Dispute Module]
-        C2[License Module]
-        C3[IP Asset Registry]
+        C2[Royalty Module]
+        C3[License Module]
+        C4[IP Asset Registry]
     end
 
     subgraph "Storage Layer"
@@ -97,11 +100,11 @@ graph TB
 
 ## Core Features
 
-### 1. Provenance Tracking (C2PA)
+### 1. C2PA Manifest Embeding and Detection
 
-A comprehensive content authenticity and provenance tracking system implementing C2PA (Coalition for Content Provenance and Authenticity) standards. This feature provides cryptographic proof of content origin, ownership, and modification history, ensuring digital assets maintain verifiable authenticity throughout their lifecycle.
+A comprehensive content authenticity and IP tracking system implementing C2PA (Coalition for Content Provenance and Authenticity) standards. This feature provides cryptographic proof of content origin, ownership, and modification history, ensuring digital assets maintain verifiable authenticity throughout their lifecycle.
 
-#### Provenance Tracking Architecture
+#### C2PA Architecture
 
 ```mermaid
 graph TB
@@ -129,7 +132,7 @@ graph TB
         L[Chain of Custody]
     end
 
-    subgraph "Provenance Display"
+    subgraph "Signature (Manifest) Display"
         M[Creator Information]
         N[Action Timeline]
         O[Certificate Details]
@@ -162,7 +165,7 @@ graph TB
 
 ```mermaid
 flowchart LR
-    subgraph "Provenance Embedding"
+    subgraph "C2PA Embedding"
         A[Upload Asset] --> B[Enter Metadata]
         B --> C{Choose Action}
         C -->|Local| D[Sign with C2PA]
@@ -171,7 +174,7 @@ flowchart LR
         E --> G[Get IPFS URL]
     end
 
-    subgraph "Provenance Verification"
+    subgraph "C2PA Verification"
         H[Input Source] --> I{Detection Method}
         I -->|File Upload| J[Upload File]
         I -->|URL/IPFS| K[Enter URL]
@@ -188,8 +191,8 @@ flowchart LR
 
 #### Core Capabilities
 
-**Provenance Embedding**
-- **Cryptographic Signing**: Asset signing with certificate-based cryptographic proof
+**C2PA Embedding**
+- **Cryptographic Signing**: Asset signing with certificate-based cryptographic proof for media that doesn't have a manifest (already signed manifest throw error - Media already signed)
 - **Multi-Format Support**: 
   - Images: JPEG, PNG, GIF, WebP
   - Audio: MP3, WAV
@@ -201,15 +204,14 @@ flowchart LR
   - Custom assertions support
 - **Flexible Output**:
   - Local download of signed assets
-  - Direct IPFS upload with gateway URL
+  - Direct IPFS upload with gateway URL Option
   - Automatic filename generation
 - **Certificate Standards**:
   - ES256 (ECDSA with P-256 and SHA-256) algorithm
   - X.509 certificate chain validation
   - Support for self-signed certificates (development)
-  - Production-ready with CA certificates
 
-**Provenance Verification**
+**C2PA Manifest Verification**
 - **Multi-Source Detection**:
   - Direct file upload from local storage
   - IPFS URLs (ipfs:// protocol or gateway URLs)
@@ -221,13 +223,12 @@ flowchart LR
   - Signature verification status
   - Certificate chain validation
   - Claim generator identification
-  - Modification history tracking
 - **Validation Reporting**:
   - Visual validation status indicators
   - Detailed error and warning messages
   - Partial validation support
   - Embedded vs. external manifest detection
-- **Provenance Data Display**:
+- **C2PA Manifest Data Display**:
   - Manifest information panel
   - Creator details with verification
   - Chronological action timeline
@@ -309,7 +310,7 @@ Verification Flow:
 
 ### 2. AI Watermark Protection
 
-Advanced invisible watermarking system for image protection using AI-powered steganography.
+Advanced invisible watermarking system for image protection using Local LLM OpenAI-powered qwen model and tool logic.
 
 #### Feature Architecture
 
@@ -323,7 +324,7 @@ sequenceDiagram
     User->>Frontend: Upload Image
     User->>Frontend: Enter Watermark Text
     Frontend->>AI_Service: Embed Watermark Request
-    AI_Service->>AI_Service: Process with AI Model
+    AI_Service->>AI_Service: Process with AI Model and watermarking tool
     AI_Service-->>Frontend: Return Watermarked Image
     Frontend->>User: Preview Watermarked Image
     User->>Frontend: Download/Upload to IPFS
@@ -377,10 +378,10 @@ Comprehensive blockchain-based dispute resolution system for IP infringement cas
 
 ```mermaid
 stateDiagram-v2
-    [*] --> Pending: Raise Dispute
+    [*] --> Raised: Raise Dispute
     Pending --> InProgress: Arbitrator Assigned
     InProgress --> Resolved: Set Judgement (Approve)
-    InProgress --> Rejected: Set Judgement (Reject)
+    InProgress --> Resolved: Set Judgement (Reject)
     Pending --> Cancelled: Cancel by Initiator
     InProgress --> Cancelled: Cancel by Arbitrator
     Resolved --> [*]
@@ -398,8 +399,7 @@ stateDiagram-v2
     end note
 
     note right of Resolved
-        Judgement in favor
-        of initiator
+        Judgement Processed and Dispute can be resolved
     end note
 ```
 
@@ -419,7 +419,7 @@ stateDiagram-v2
 **Dispute Actions**
 
 1. **Raise Dispute**
-   - Input: Target IP ID, Evidence Hash, Tag, Data
+   - Input: Target IP ID, Evidence, Tag, Liveness and Bond
    - Creates on-chain dispute record
    - Assigns unique dispute ID
    - Triggers arbitration policy activation
@@ -428,16 +428,9 @@ stateDiagram-v2
    - Input: Dispute ID, Resolution Data
    - Marks dispute as resolved
    - Updates IP asset status
-   - Distributes penalties/rewards (if configured)
+   - Distributes penalties/rewards
 
-3. **Set Judgement**
-   - Input: Dispute ID, Decision (Approve/Reject), Data
-   - Arbitrator-only function
-   - Final binding decision
-   - Updates dispute status
-   - Triggers smart contract consequences
-
-4. **Cancel Dispute**
+3. **Cancel Dispute**
    - Input: Dispute ID, Cancellation Data
    - Allows dispute withdrawal
    - Irreversible action
@@ -451,11 +444,6 @@ stateDiagram-v2
 - Arbitration policy address
 - Evidence hash (IPFS CID)
 - Target tag and current tag
-- Color-coded status indicators:
-  - Yellow: Pending
-  - Blue: In Progress
-  - Green: Resolved
-  - Red: Cancelled
 
 **UI Features**
 - Real-time dispute search by ID
@@ -464,7 +452,7 @@ stateDiagram-v2
 - Toast notifications for transaction status
 - Address shortening with "show full" toggle
 - One-click address copying
-- Total disputes counter
+- Story Aeneid Total disputes counter
 - Responsive design for all screen sizes
 
 #### Smart Contract Integration
@@ -473,13 +461,14 @@ stateDiagram-v2
 DisputeModule.sol
 ├── raiseDispute(targetIpId, evidenceHash, tag, data)
 ├── resolveDispute(disputeId, data)
-├── setDisputeJudgement(disputeId, decision, data)
 └── cancelDispute(disputeId, data)
 ```
 
 ---
 
-### 4. On-Chain IP History Tracking
+### 4. On-Chain IP Info and Internet Usage Tracking 
+
+#### Traits, Creator, Revenue Generated, Licences, Internet Usage, Infringement, etc.
 
 Track complete lifecycle of intellectual property assets on Story Protocol blockchain.
 
@@ -487,13 +476,13 @@ Track complete lifecycle of intellectual property assets on Story Protocol block
 
 ```mermaid
 graph LR
-    A[IP Asset Creation] --> B[On-Chain Registry]
-    B --> C[License Minting]
-    C --> D[Transfer Events]
-    D --> E[Dispute Records]
-    E --> F[Resolution History]
+    A[IP Asset Creation] --> B[On-Chain API Registry]
+    B --> C[Attached License]
+    C --> D[Infringements]
+    D --> E[Asset Metatdata (media display, timeline, name, description, etc)]
+    E --> F[Traits and Creator Details]
     
-    B --> G[GraphQL Indexer]
+    B --> G[Aeneid Story Explorer]
     C --> G
     D --> G
     E --> G
@@ -502,7 +491,7 @@ graph LR
     G --> H[Frontend Dashboard]
     H --> I[Timeline View]
     H --> J[Relationship Graph]
-    H --> K[Event History]
+    H --> K[Revenue Paid and Claimed Events]
 
     style A fill:#8b5cf6
     style G fill:#06b6d4
@@ -513,19 +502,15 @@ graph LR
 
 **IP Asset Tracking**
 - View complete asset history
-- Owner information and transfer records
-- License token details
+- Creator information and traits record
+- License details
 - Metadata display (name, URI, hash)
 - Creation timestamp
-- Current status
+- Internet Tracking of IP media (support for videos and images)
 
 **Event Monitoring**
-- Registration events
-- Transfer transactions
-- License issuance
-- Dispute creation
-- Resolution updates
-- Metadata changes
+- IP Revenue Payments
+- Infringement Details
 
 **Relationship Visualization**
 - Parent-child IP relationships
@@ -551,6 +536,7 @@ graph LR
 | React | 19.2.0 | UI framework |
 | Vite | 7.2.4 | Build tool and dev server |
 | Tailwind CSS | 4.1.17 | Styling framework |
+| Goldsky Subgraph | Latest | Event listening for IP Royalties |
 | Wagmi | 2.x | Ethereum wallet connector |
 | ConnectKit | 1.9.1 | Wallet connection UI |
 | React Query | 5.90.11 | Async state management |
@@ -559,22 +545,23 @@ graph LR
 | Lucide React | 0.554.0 | Icon library |
 | React Hot Toast | 2.6.0 | Notification system |
 
-### Backend (C2PA Service)
+### Backend (C2PA Manifest Service and AI Watermark)
 
 | Technology | Version | Purpose |
 |-----------|---------|---------|
 | Node.js | ≥18.0.0 | Runtime environment |
 | Express | 5.1.0 | Web framework |
 | @contentauth/c2pa-node | Latest | C2PA implementation |
+| Google Lens | Latest | Internet Track of IP Asset Usage |
 | Multer | Latest | File upload handling |
+| Local LM Studio Server | Latest | qwen/qwen3-vl-4b | AI Watermarking and detection |
 | CORS | 2.8.5 | Cross-origin support |
 
 ### Blockchain
 
 | Technology | Network | Purpose |
 |-----------|---------|---------|
-| Story Protocol | Aeneid Testnet | IP asset registry |
-| Smart Contracts | Solidity | Dispute and license logic |
+| Story Protocol | Aeneid Testnet Explorer | Smart Contracts | Solidity | Dispute and License modules |
 | GraphQL | API | Blockchain data indexing |
 
 ### Storage & Services
@@ -582,7 +569,7 @@ graph LR
 | Service | Purpose |
 |---------|---------|
 | IPFS/Pinata | Decentralized file storage |
-| Render | Backend API hosting |
+| Render | Backend API hosting for Google Lens and C2PA Manifest Signing |
 | Cloudflare | CDN and security |
 
 ---
@@ -606,7 +593,8 @@ graph TB
 
     subgraph "Backend Services"
         C2PA[C2PA API]
-        AI[AI Service]
+        AI[AI Service using Local LM Server]
+        IT[Internet Tracking using Google Lens]
     end
 
     subgraph "Blockchain"
@@ -614,6 +602,7 @@ graph TB
         DM[Dispute Module]
         LM[License Module]
         IP[IP Registry]
+        ES[Event Subgraph]
     end
 
     subgraph "Storage"
@@ -627,6 +616,7 @@ graph TB
     
     UI -->|Sign/Validate| C2PA
     UI -->|Watermark| AI
+    UI -->|Internet Usage Track| IT
     UI -->|Upload| IPFS
     
     WC -->|Transactions| SP
@@ -646,7 +636,7 @@ graph TB
 
 ### Data Flow Patterns
 
-**Asset Protection Flow**
+**Asset C2PA Protection Flow**
 ```
 1. User uploads asset → Frontend
 2. Frontend sends to C2PA API → Backend signs
@@ -655,23 +645,29 @@ graph TB
 5. Confirmation → User receives proof
 ```
 
+**Asset Internet Tracking Flow**
+```
+1. User enters IP ID → Frontend
+2. Frontend displays IP details such as media, traits, license, etc → Frontend fetches IP detail from Aeneid Story Explorer
+3. Frontend sends IP media to Backend → Backend searches the internet for media usage
+4. Usage on the internet (Social media, blogs, websites, publications, etc) compiled → User receives proof of illegal usage of Asset and can proceed for legal process.
+```
+
 **Dispute Resolution Flow**
 ```
-1. User detects infringement → Gather evidence
+1. User detects infringement with our Internet Tracking tool → Gather evidence
 2. Evidence → IPFS upload
 3. IPFS hash → Smart contract dispute creation
 4. Arbitrator reviews → Set judgement
 5. Judgement executed → On-chain consequences
-6. Resolution recorded → IP history updated
 ```
 
 **Detection Flow**
 ```
-1. Suspicious asset found → Upload to detection
+1. Suspicious asset found → Upload to either C2PA or watermark detection tool
 2. C2PA validation → Check manifest
 3. Watermark extraction → AI analysis
-4. Blockchain verification → Check IP registry
-5. Results compiled → Present to user
+4. User verification → Check IP registry
 ```
 
 ---
@@ -995,11 +991,10 @@ SentryMark/
 │   │       ├── InfoCard.jsx
 │   │       └── SuccessResult.jsx
 │   ├── pages/
-│   │   ├── Audio_Detect.jsx
+│   │   ├── C2PA_Impl.jsx
 │   │   ├── AI_Detect.jsx
 │   │   ├── Dispute_Management.jsx
-│   │   ├── Onchain_IP_History.jsx
-│   │   └── IP_Monitoring.jsx
+│   │   └── Onchain_IP_History.jsx
 │   ├── abi/
 │   │   ├── dispute_abi.js
 │   │   ├── licence_abi.js
@@ -1020,6 +1015,13 @@ SentryMark/
 │   │   ├── keys/
 │   │   └── temp/
 │   └── package.json
+├── ai_tool/
+│   ├── api/
+│   │   └── server.py
+│   ├── llm/
+│   │   └── api.py
+│   ├── run.py
+│   └── requirements.txt
 ├── public/
 ├── package.json
 ├── vite.config.js
@@ -1065,7 +1067,6 @@ We welcome contributions to SentryMark! Please follow these guidelines:
 - Test coverage expansion
 - Performance optimizations
 - UI/UX improvements
-- Smart contract audits
 
 ---
 
@@ -1085,8 +1086,10 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ## Acknowledgments
 
-- **Story Protocol**: For providing the blockchain infrastructure
+- **Story Explorer**: For providing the blockchain infrastructure
 - **C2PA Coalition**: For content authenticity standards
+- **Goldsky Subgraph**: For IP revenue generation and claimed events
+- **Google Lens**: For IP media tracking over the internet
 - **IPFS/Pinata**: For decentralized storage solutions
 - **OpenAI**: For AI watermarking technology
 - **Wagmi & ConnectKit**: For Web3 connectivity tools

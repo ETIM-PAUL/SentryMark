@@ -5,10 +5,8 @@ import { RouterProvider } from "react-router/dom";
 import App from './App';
 import './index.css'
 import AIWatermarkAndDetect from './pages/AI_Detect';
-import IP_Monitoring from './pages/IP_Monitoring';
 import Onchain_IP_History from './pages/Onchain_IP_History';
 import Dispute_Management from './pages/Dispute_Management';
-import Header from './components/header';
 import { WagmiProvider } from 'wagmi';
 import { config } from './config';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -26,10 +24,6 @@ const router = createBrowserRouter([
   {
     path: "/audio-detect",
     Component: C2PA_Impl,
-  },
-  {
-    path: "/ip_monitoring",
-    Component: IP_Monitoring,
   },
   {
     path: "/onchain-ip-history",
