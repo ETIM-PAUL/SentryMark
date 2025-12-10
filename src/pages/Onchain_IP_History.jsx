@@ -6,11 +6,12 @@ import { fetchIPByIpId, fetchIPTips } from '../queries';
 import { formatDate, getTokenMetadata } from '../utils';
 import IPAssetLoadingSkeleton from '../components/SkeletonLoader';
 import { RelationshipStats } from '../components/RelationshipStats';
-import { fetchAPIdata, fetchInfringedIPs } from '../queries/api_queries';
+import { checkIPInfringement, fetchAPIdata, fetchInfringedIPs } from '../queries/api_queries';
 import { TrackingModal } from '../components/TrackingModal';
 import axios from 'axios';
 import { formatUnits } from 'ethers';
 import { analyzeVideoWithGoogleLens } from '../utils';
+import { InfringingModal } from '../components/InfringingModal';
 
 const Onchain_IP_History = () => {
   const [assetId, setAssetId] = useState('');
@@ -93,7 +94,7 @@ const Onchain_IP_History = () => {
     axios.get(url, { params })
       .then(response => {
         console.log(response.data);
-        setTrackedAssets(response.data.exact_matches);
+        setTrackedAssets(response.data.exact_matches ?? []);
         setTrackedAssetsLoading(false);
       })
       .catch(error => {
@@ -190,7 +191,7 @@ const Onchain_IP_History = () => {
               <TipsTable tips={assetData.tips} currentPage={tipsPage} setCurrentPage={setTipsPage} paginatedTips={paginateData(assetData.tips, tipsPage)} totalPages={totalPages(assetData.tips)} />
               
               {/* Tips Card - Right (Duplicate) */}
-              {/* <RevenueClaimsTable claims={assetData.revenueClaims} currentPage={revenueClaimsPage} setCurrentPage={setRevenueClaimsPage} paginatedClaims={paginateData(assetData.revenueClaims, revenueClaimsPage)} totalPages={totalPages(assetData.revenueClaims)} /> */}
+              <InfringingModal infringeResult={assetData.infringementStatus} />
             </div>
             {/* Metadata and License Cards Row */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -679,16 +680,6 @@ const MediaDisplay = ({ nftMetadata, mediaLoading, setMediaLoading, handleCheck 
         ) : (
           renderMedia()
         )}
-      </div>
-
-      <div className="flex items-center justify-between mb-2 w-full">
-      <button
-          onClick={handleCheck}
-          className="cursor-pointer w-full mt-2 bg-linear-to-r from-slate-600 to-pink-600 hover:from-slate-700 hover:to-pink-700 disabled:from-slate-600 disabled:to-slate-700 text-white px-8 py-3 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 shadow-lg hover:shadow-slate-500/20 disabled:cursor-not-allowed"
-        >
-          <ScanEye size={20} />
-          Check If IP infringes another IP
-        </button>
       </div>
     </div>
   );

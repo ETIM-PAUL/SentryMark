@@ -25,6 +25,20 @@ export default defineConfig({
         changeOrigin: true,
         secure: true,
       },
+      "/yakoa": {
+        target: "https://docs-demo.ip-api-sandbox.yakoa.io",
+        changeOrigin: true,
+        secure: false,
+        rewrite: (p) => p.replace(/^\/yakoa/, ""),
+        configure: (proxy, _options) => {
+          proxy.on("proxyReq", (proxyReq, req) => {
+            // Forward API key header
+            if (req.headers["x-api-key"]) {
+              proxyReq.setHeader("x-api-key", req.headers["x-api-key"]);
+            }
+          });
+        }
+      }
     },
   },
 })

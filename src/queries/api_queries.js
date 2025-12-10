@@ -54,4 +54,23 @@ export async function fetchInfringedIPs(ip_url) {
 }
 
 
+export async function checkIPInfringement(token_id) {
+  console.log(token_id.toLowerCase());
+  
+  const options = {
+    method: 'GET',
+    url: `/yakoa/docs-demo/token/${token_id.toLowerCase()}`,
+    headers: {
+      accept: 'application/json',
+      'X-API-KEY': '8BIKpJkWmT1GbhnDmFoN592Msrx1THp53AVTGv1V'
+    }
+  };
+  
+  axios
+    .request(options)
+    .then(res => console.log(res.data))
+    .catch(err => console.error(err));
+}
+
+
 

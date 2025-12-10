@@ -86,7 +86,7 @@ export const TrackingModal = ({ isLoading, trackedAssets, onClose, currentPage, 
                   <ScanEye className="absolute inset-0 m-auto text-purple-400" size={32} />
                 </div>
                 <p className="text-slate-300 text-lg mt-6 font-medium">Scanning the internet...</p>
-                <p className="text-slate-500 text-sm mt-2">This may take a few moments</p>
+                <p className="text-slate-500 text-sm mt-2">This may take a few moment</p>
               </div>
             ) : trackedAssets.length > 0 ? (
               <div className="space-y-4">

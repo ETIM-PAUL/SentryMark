@@ -87,7 +87,7 @@ const C2PA_Impl = () => {
         if (!response.ok) {
           const errorText = await response.text();
           console.error('Backend error:', errorText);
-          throw new Error(`Failed to sign file with C2PA: ${response.status} - ${errorText}`);
+          throw new Error(`${errorText}`);
         }
 
         // Step 2: Get the signed file as a Blob
@@ -139,7 +139,7 @@ const C2PA_Impl = () => {
         }
       } catch (err) {
         console.error('Full error details:', err);
-        setError(`Failed to add C2PA manifest: ${err.message}`);
+        setError(`${err.message}`);
       } finally {
         setProcessing(false);
         setProcessingType('');
@@ -164,12 +164,12 @@ const C2PA_Impl = () => {
 
     const handleDetectManifest = async () => {
       // Validate input based on detection method
-      if (detectMethod === 'file' && !detectFile) {
+      if (detectMethodOptions[0].selected && !detectFile) {
         setDetectError('Please upload a file first');
         return;
       }
 
-      if (detectMethod === 'url' && !detectUrl.trim()) {
+      if (detectMethodOptions[1].selected && !detectUrl.trim()) {
         setDetectError('Please enter a valid URL');
         return;
       }
@@ -181,7 +181,7 @@ const C2PA_Impl = () => {
       try {
         let response;
 
-        if (detectMethod === 'file') {
+        if (detectMethodOptions[0].selected) {
           // File upload method
           const formData = new FormData();
           formData.append('file', detectFile);
