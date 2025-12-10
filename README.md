@@ -2,6 +2,9 @@
 
 **A Comprehensive Decentralized Application for Intellectual Property Asset Management, Tracking, and Enforcement**
 
+📊 **[View Pitch Deck](https://sentrymark-9382b5a.gamma.site/)**
+
+
 ## Table of Contents
 
 - [Overview](#overview)
