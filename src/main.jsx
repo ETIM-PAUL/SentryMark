@@ -22,11 +22,11 @@ const router = createBrowserRouter([
     Component: AIWatermarkAndDetect,
   },
   {
-    path: "/audio-detect",
+    path: "/c2pa-asset",
     Component: C2PA_Impl,
   },
   {
-    path: "/onchain-ip-history",
+    path: "/onchain-ip-tracking",
     Component: Onchain_IP_History,
   },
   {

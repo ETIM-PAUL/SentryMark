@@ -8,6 +8,9 @@ export default defineConfig({
   css: {
     postcss: {},
   },
+  build: {
+    outDir: "dist",
+  },
   server: {
     proxy: {
       '/api/sign': {

@@ -8,8 +8,8 @@ const Header = () => {
 
   const tabs = [
     { href:'/', id: 'watermarking', label: 'AI Watermarking', icon: Upload },
-    { href:'/audio-detect', id: 'audio', label: 'IP Asset C2PA', icon: Music },
-    { href:'/onchain-ip-history', id: 'blockchain', label: 'Blockchain Provenance', icon: Link },
+    { href:'/c2pa-asset', id: 'audio', label: 'IP Asset C2PA', icon: Music },
+    { href:'/onchain-ip-tracking', id: 'blockchain', label: 'Blockchain Provenance', icon: Link },
     { href:'/dispute_management', id: 'dispute', label: 'Dispute Management', icon: Scale },
   ];
 
