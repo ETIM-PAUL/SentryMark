@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import toast from 'react-hot-toast';
 import { Upload, Download, Eye, Shield, AlertCircle, CheckCircle, Loader2, Sparkles, Lock, Brain, Zap } from 'lucide-react';
+import { downloadBase64 } from '../utils';
 
 const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
 
@@ -59,110 +60,40 @@ export default function AIWatermarkAndDetect() {
       return;
     }
 
-    setLoading(true);
+    // setLoading(true);
     setAiLog([]);
+    setWatermarkedImage(null);
     addLog('🚀 Initializing AI watermarking system...', 'info');
     
     try {
       addLog('📸 Converting image to base64...', 'info');
       const base64Image = await convertImageToBase64(imageFile);
-      
-      addLog('🤖 Sending to Claude AI for watermark embedding...', 'info');
-      addLog('⚙️ AI is analyzing image and creating optimal watermark pattern...', 'info');
 
-      const response = await fetch("/api/v1/chat/completions", {
+      
+
+      const response = await fetch("http://localhost:8000/watermark-image", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          'Authorization': `Bearer ${apiKey}`,
         },
         body: JSON.stringify({
-          model: "gpt-3.5-turbo",
-          max_tokens: 500,
-          messages: [
-            { 
-              role: "user", 
-              content: [
-                {
-                  type: "image",
-                  source: {
-                    type: "base64",
-                    media_type: imageFile.type,
-                    data: base64Image
-                  }
-                },
-                {
-                  type: "text",
-                  text: `You are an advanced watermarking AI. Your task is to embed an invisible watermark into this image.
-
-Watermark text to embed: "${watermarkText}"
-
-Please analyze this image and create a watermarked version using these techniques:
-1. Analyze the image characteristics (size, complexity, color distribution)
-2. Convert the watermark text to binary
-3. Use LSB (Least Significant Bit) steganography to embed the watermark invisibly
-4. Apply frequency domain techniques if suitable
-5. Return a detailed JSON response
-
-Return ONLY valid JSON (no markdown, no code blocks) in this exact format:
-{
-  "success": true,
-  "watermarked_image_description": "detailed description of where and how you embedded the watermark",
-  "embedding_method": "LSB / DCT / Hybrid",
-  "pixels_modified": number,
-  "robustness_score": "High/Medium/Low",
-  "fingerprint": "unique hash for this watermark",
-  "recommendations": "tips for preserving the watermark",
-  "technical_details": "explanation of the embedding process"
-}
-
-Note: Since I cannot actually modify image bytes, describe in detail how the watermark would be embedded technically.`
-                }
-              ]
-            }
-          ],
+          base64_image: base64Image,
+          watermark_hash: watermarkText,
         })
       });
 
-      const data = await response.json();
-      console.log("data", data)
-      const textContent = data.content.find(item => item.type === "text")?.text || "";
-      
-      addLog('📊 AI response received, parsing results...', 'info');
-      
-      const cleaned = textContent.replace(/```json|```/g, "").trim();
-      const result = JSON.parse(cleaned);
+      const result = await response.json();
 
-      if (result.success) {
+      console.log("res",result.result)
+
+      if (result.result.success) {
         addLog('✅ AI watermarking analysis complete!', 'success');
-        addLog(`🔧 Method: ${result.embedding_method}`, 'info');
-        addLog(`📈 Robustness: ${result.robustness_score}`, 'info');
-        addLog(`🔐 Fingerprint: ${result.fingerprint.substring(0, 20)}...`, 'info');
         
-        // Since AI can't actually modify the image, we simulate it
-        setWatermarkedImage(image);
-        
-        // Store the watermark record
-        try {
-          const record = {
-            watermark: watermarkText,
-            fingerprint: result.fingerprint,
-            method: result.embedding_method,
-            timestamp: new Date().toISOString(),
-            aiAnalysis: result
-          };
-          await window.storage.set(`wm:${result.fingerprint}`, JSON.stringify(record), false);
-          addLog('💾 Watermark record stored successfully', 'success');
-        } catch (err) {
-          addLog('⚠️ Storage warning: ' + err.message, 'warning');
-        }
-
-        setDetectionResult({
-          embedded: true,
-          details: result
-        });
+        setWatermarkedImage(result.result.watermarked_image);
+      } else {
+        addLog('❌ Error: ' + result.result.error, 'error');
+        console.error('Watermarking error:', result.result.error);
       }
-
     } catch (err) {
       addLog('❌ Error: ' + err.message, 'error');
       console.error('Watermarking error:', err);
@@ -450,36 +381,16 @@ Be thorough in your analysis. If you find patterns that suggest a watermark, des
             </>
           )}
 
-          {aiLog.length > 0 && (
-            <div className="mt-6 bg-slate-900/80 rounded-lg p-4 max-h-64 overflow-y-auto border border-slate-500/20">
-              <div className="flex items-center gap-2 mb-3">
-                <div className="w-2 h-2 bg-slate-400 rounded-full animate-pulse"></div>
-                <p className="text-sm font-mono text-slate-300">AI Processing Log</p>
-              </div>
-              {aiLog.map((log, idx) => (
-                <div key={idx} className={`text-xs font-mono mb-1 ${
-                  log.type === 'success' ? 'text-green-400' :
-                  log.type === 'error' ? 'text-red-400' :
-                  log.type === 'warning' ? 'text-yellow-400' :
-                  'text-slate-300'
-                }`}>
-                  {log.message}
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+          <div className="w-full mt-6">
 
-        <div className="grid md:grid-cols-2 gap-6">
-
-          {detectionResult && mode === 'embed' && detectionResult.embedded && (
+          {mode === 'embed' && watermarkedImage && (
             <div className="bg-slate-800/50 backdrop-blur-xl rounded-xl shadow-lg p-6 border border-slate-500/20">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-semibold text-slate-200">AI Analysis</h3>
                 {watermarkedImage && (
                   <button
-                    onClick={downloadImage}
-                    className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all"
+                    onClick={() => downloadBase64(watermarkedImage, "watermarked_output")}
+                    className="flex cursor-pointer items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all"
                   >
                     <Download className="w-4 h-4" />
                     Download
@@ -493,27 +404,8 @@ Be thorough in your analysis. If you find patterns that suggest a watermark, des
                     <CheckCircle className="w-5 h-5 text-green-400 mt-0.5" />
                     <div>
                       <p className="font-semibold text-green-300 mb-2">Watermark Embedded Successfully!</p>
-                      <p className="text-sm text-green-200/80">{detectionResult.details.watermarked_image_description}</p>
+                      {/* <p className="text-sm text-green-200/80">{detectionResult.details.watermarked_image_description}</p> */}
                     </div>
-                  </div>
-                </div>
-
-                <div className="space-y-3 text-sm">
-                  <div className="flex items-center gap-3 p-3 bg-slate-700/30 rounded-lg">
-                    <span className="text-slate-300">Method:</span>
-                    <span className="font-semibold text-white">{detectionResult.details.embedding_method}</span>
-                  </div>
-                  <div className="flex items-center gap-3 p-3 bg-slate-700/30 rounded-lg">
-                    <span className="text-slate-300">Robustness:</span>
-                    <span className="font-semibold text-white">{detectionResult.details.robustness_score}</span>
-                  </div>
-                  <div className="p-3 bg-slate-700/30 rounded-lg">
-                    <span className="text-slate-300">Technical Details:</span>
-                    <p className="text-white/80 mt-1">{detectionResult.details.technical_details}</p>
-                  </div>
-                  <div className="p-3 bg-blue-500/10 border border-blue-500/30 rounded-lg">
-                    <span className="text-blue-300 font-semibold">💡 Recommendations:</span>
-                    <p className="text-blue-200/80 mt-1">{detectionResult.details.recommendations}</p>
                   </div>
                 </div>
               </div>
@@ -595,7 +487,29 @@ Be thorough in your analysis. If you find patterns that suggest a watermark, des
               )}
             </div>
           )}
+          </div>
+
+          {aiLog.length > 0 && (
+            <div className="mt-6 bg-slate-900/80 rounded-lg p-4 max-h-64 overflow-y-auto border border-slate-500/20">
+              <div className="flex items-center gap-2 mb-3">
+                <div className="w-2 h-2 bg-slate-400 rounded-full animate-pulse"></div>
+                <p className="text-sm font-mono text-slate-300">AI Processing Log</p>
+              </div>
+              {aiLog.map((log, idx) => (
+                <div key={idx} className={`text-xs font-mono mb-1 ${
+                  log.type === 'success' ? 'text-green-400' :
+                  log.type === 'error' ? 'text-red-400' :
+                  log.type === 'warning' ? 'text-yellow-400' :
+                  'text-slate-300'
+                }`}>
+                  {log.message}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
+
+
 
         <div className="mt-8 hidden bg-slate-800/50 backdrop-blur-xl rounded-xl shadow-lg p-6 border border-slate-500/20">
           <h3 className="text-lg font-semibold text-slate-200 mb-4 flex items-center gap-2">

@@ -210,3 +210,58 @@ export async function analyzeVideoWithGoogleLens(videoUrl, timeInSeconds = 0) {
     throw error;
   }
 }
+
+export function downloadBase64(base64String, filename = "output") {
+   // Decode just the first few bytes to detect format
+   const binary = atob(base64String.slice(0, 20));
+   const bytes = binary.split("").map(c => c.charCodeAt(0));
+ 
+   let mimeType = "";
+   let extension = "";
+ 
+   // WebP ("RIFF....WEBP")
+   if (binary.startsWith("RIFF") || base64String.startsWith("UklGR")) {
+     mimeType = "image/webp";
+     extension = "webp";
+   }
+   // PNG ("\x89PNG")
+   else if (bytes[0] === 0x89 && binary.includes("PNG")) {
+     mimeType = "image/png";
+     extension = "png";
+   }
+   // JPEG (FFD8)
+   else if (bytes[0] === 0xFF && bytes[1] === 0xD8) {
+     mimeType = "image/jpeg";
+     extension = "jpg";
+   }
+   // GIF ("GIF89a" or "GIF87a")
+   else if (binary.startsWith("GIF8")) {
+     mimeType = "image/gif";
+     extension = "gif";
+   }
+   else {
+     console.error("Unknown file type");
+     return;
+   }
+ 
+   // Convert full base64 → Blob
+   const decoded = atob(base64String);
+   const array = new Uint8Array(decoded.length);
+ 
+   for (let i = 0; i < decoded.length; i++) {
+     array[i] = decoded.charCodeAt(i);
+   }
+ 
+   const blob = new Blob([array], { type: mimeType });
+   const url = URL.createObjectURL(blob);
+ 
+   // Download
+   const a = document.createElement("a");
+   a.href = url;
+   a.download = `${filename}.${extension}`;
+   a.click();
+ 
+   URL.revokeObjectURL(url);
+}
+
+ 
