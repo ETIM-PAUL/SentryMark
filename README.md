@@ -482,7 +482,7 @@ graph LR
     A[IP Asset Creation] --> B[On-Chain API Registry]
     B --> C[Attached License]
     C --> D[Infringements]
-    D --> E[Asset Metatdata \(media display, timeline, name, description, etc\)]
+    D --> E[Asset Metatdata - media display, timeline, name, description, etc]
     E --> F[Traits and Creator Details]
     
     B --> G[Aeneid Story Explorer]
