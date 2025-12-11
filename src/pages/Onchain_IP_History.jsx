@@ -2,14 +2,13 @@ import React, { useState } from 'react';
 import { Search, FileText, Shield, Users, GitBranch, Network, ChevronDown, ChevronUp, Copy, Play, Pause, Volume2, VolumeX, Music, Radio, MoreVertical, Download, DollarSign, User, ScanEye } from 'lucide-react';
 import Header from '../components/header';
 import toast, { Toaster } from 'react-hot-toast';
-import { fetchIPByIpId, fetchIPTips } from '../queries';
+import { fetchIPTips } from '../queries';
 import { formatDate, getTokenMetadata } from '../utils';
 import IPAssetLoadingSkeleton from '../components/SkeletonLoader';
 import { RelationshipStats } from '../components/RelationshipStats';
-import { checkIPInfringement, fetchAPIdata, fetchInfringedIPs } from '../queries/api_queries';
+import { fetchAPIdata } from '../queries/api_queries';
 import { TrackingModal } from '../components/TrackingModal';
 import axios from 'axios';
-import { formatUnits } from 'ethers';
 import { analyzeVideoWithGoogleLens } from '../utils';
 import { InfringingModal } from '../components/InfringingModal';
 

@@ -3,11 +3,6 @@ import toast from 'react-hot-toast';
 import { Upload, Download, Eye, Shield, AlertCircle, CheckCircle, Loader2, Sparkles, Lock, Brain, Zap } from 'lucide-react';
 import { downloadBase64 } from '../utils';
 
-const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
-
-if (!apiKey) {
-  console.error('Missing VITE_OPENAI_KEY in environment variables');
-}
 
 export default function AIWatermarkAndDetect() {
   const [mode, setMode] = useState('embed');

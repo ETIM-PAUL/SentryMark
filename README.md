@@ -694,21 +694,31 @@ cd SentryMark
 ### Install Frontend Dependencies
 
 ```bash
-npm install
+yarn install
+```
+
+### Install Backend Dependencies (AI Watermarking Service) - Make Sure Your Local LM Server is running.
+
+```bash
+cd ai_watermarking_be
+python -m venv .env
+source .env/bin/activate
+
+pip install
 ```
 
 ### Install Backend Dependencies (C2PA Service)
 
 ```bash
-cd c2pa_tool
+cd c2pa_tool_be
 npm install
 ```
 
 ### Create Required Directories
 
 ```bash
-mkdir -p c2pa_tool/keys
-mkdir -p c2pa_tool/temp
+mkdir -p c2pa_tool_be/keys
+mkdir -p c2pa_tool_be/temp
 ```
 
 ---
@@ -720,6 +730,10 @@ mkdir -p c2pa_tool/temp
 Create a `.env` file in the root directory:
 
 ```env
+VITE_IPTIP_GOLDSKY_URL=your_iptip_subgrapj_url
+VITE_STORY_API_KEY=your_story_aeneid_api_key
+VITE_SEARCH_API_KEY=your_google_lens_api_key
+
 # Pinata IPFS Configuration
 VITE_PINATA_JWT=your_pinata_jwt_token
 VITE_PINATA_GATEWAY=your_pinata_gateway_url
@@ -727,19 +741,9 @@ VITE_PINATA_GATEWAY=your_pinata_gateway_url
 # Wallet Connect Configuration
 VITE_WALLET_CONNECT_PROJECT_ID=your_project_id
 
-# Story Protocol Configuration
-VITE_STORY_AENEID_RPC=https://rpc.aeneid.story.foundation
-
 # C2PA Backend URL (Production)
 VITE_C2PA_API_URL=https://sentrymark-c2pa.onrender.com
 
-# Network Configuration
-VITE_CHAIN_ID=1516
-
-# Contract Addresses (Story Protocol)
-VITE_DISPUTE_MODULE_ADDRESS=0x...
-VITE_LICENSE_MODULE_ADDRESS=0x...
-VITE_IP_ASSET_REGISTRY_ADDRESS=0x...
 ```
 
 ### C2PA Certificate Setup
@@ -749,7 +753,7 @@ For production use, obtain certificates from a trusted Certificate Authority.
 For development/testing, generate self-signed certificates:
 
 ```bash
-cd c2pa_tool/keys
+cd c2pa_tool_be/keys
 
 # Generate CA private key
 openssl ecparam -genkey -name prime256v1 -out ca_key.pem
@@ -856,6 +860,19 @@ const ipfsHash = await uploadFileToIPFS(file);
 const ipfsUrl = `https://gateway.pinata.cloud/ipfs/${ipfsHash}`;
 ```
 
+---
+
+#### Goldsky Subgraph Event
+
+```solidity
+royalty_paid entity
+```
+
+```solidity
+revenue_token_claimed
+```
+---
+
 #### Smart Contract Interaction
 
 ```javascript
@@ -892,12 +909,6 @@ interface IDisputeModule {
         bytes calldata data
     ) external;
 
-    function setDisputeJudgement(
-        uint256 disputeId,
-        bool decision,
-        bytes calldata data
-    ) external;
-
     function cancelDispute(
         uint256 disputeId,
         bytes calldata data
@@ -906,39 +917,6 @@ interface IDisputeModule {
     function getDisputeInfo(
         uint256 disputeId
     ) external view returns (DisputeInfo memory);
-}
-```
-
-### License Module Interface
-
-```solidity
-interface ILicenseModule {
-    function mintLicense(
-        address ipId,
-        address recipient,
-        uint256 amount,
-        bytes calldata data
-    ) external returns (uint256 tokenId);
-
-    function getLicenseInfo(
-        uint256 tokenId
-    ) external view returns (LicenseInfo memory);
-}
-```
-
-### IP Asset Registry Interface
-
-```solidity
-interface IIPAssetRegistry {
-    function register(
-        string calldata name,
-        string calldata uri,
-        bytes32 metadataHash
-    ) external returns (address ipId);
-
-    function getIPAssetInfo(
-        address ipId
-    ) external view returns (IPAssetInfo memory);
 }
 ```
 
@@ -956,10 +934,17 @@ Server starts at `http://localhost:5173`
 
 **Backend (C2PA):**
 ```bash
-cd c2pa_tool
+cd c2pa_tool_be
 npm start
 ```
 API available at `http://localhost:3000`
+
+**Backend (AI Watermarking):**
+```bash
+cd ai_watermarking_tool
+python run.py
+```
+API available at `http://localhost:8000`
 
 ### Build for Production
 
@@ -1099,4 +1084,4 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ---
 
-**Built with dedication to protecting intellectual property rights in the digital age.**
+**Built with dedication to protecting intellectual property rights in the digital age and to aid public track IP details and revenue generated.**
