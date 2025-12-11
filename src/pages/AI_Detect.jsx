@@ -34,7 +34,6 @@ export default function AIWatermarkAndDetect() {
       reader.onload = (event) => {
         setImage(event.target.result);
         setWatermarkedImage(null);
-        setDetectionResult(null);
         setAiLog([]);
       };
       reader.readAsDataURL(file);
@@ -116,107 +115,28 @@ export default function AIWatermarkAndDetect() {
       addLog('📸 Converting image to base64...', 'info');
       const base64Image = await convertImageToBase64(imageFile);
       
-      addLog('🤖 Sending to Claude AI for watermark detection...', 'info');
+      addLog('🤖 Sending to LLM Server for watermark detection...', 'info');
       addLog('🔎 AI is analyzing image for hidden watermarks...', 'info');
 
-      const response = await fetch("api/v1/chat/completions", {
+      const response = await fetch("http://localhost:8000/verify-watermark", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          model: "gpt-3.5-turbo",
-          max_tokens: 500,
-          messages: [
-            { 
-              role: "user", 
-              content: [
-                {
-                  type: "image",
-                  source: {
-                    type: "base64",
-                    media_type: imageFile.type,
-                    data: base64Image
-                  }
-                },
-                {
-                  type: "text",
-                  text: `You are an advanced watermark detection AI. Analyze this image for hidden watermarks.
-
-Your task:
-1. Examine the image for LSB steganography patterns
-2. Look for frequency domain watermarks (DCT/DFT patterns)
-3. Analyze pixel distributions for anomalies
-4. Check for metadata or hidden text
-5. Assess the likelihood of watermark presence
-
-Return ONLY valid JSON (no markdown, no code blocks) in this exact format:
-{
-  "watermark_detected": boolean,
-  "confidence": "High/Medium/Low/None",
-  "extracted_text": "detected watermark text or null",
-  "detection_method": "LSB/DCT/Metadata/None",
-  "analysis": "detailed explanation of findings",
-  "anomalies_found": ["list of suspicious patterns"],
-  "recommendations": "what this suggests about the image"
-}
-
-Be thorough in your analysis. If you find patterns that suggest a watermark, describe them in detail.`
-                }
-              ]
-            }
-          ],
+          base64_image: base64Image,
+          watermark_hash: watermarkText,
         })
       });
 
-      const data = await response.json();
-      const textContent = data.content.find(item => item.type === "text")?.text || "";
-      
-      addLog('📊 AI analysis received, processing results...', 'info');
-      
-      const cleaned = textContent.replace(/```json|```/g, "").trim();
-      const result = JSON.parse(cleaned);
-
-      if (result.watermark_detected) {
-        addLog('✅ Watermark detected by AI!', 'success');
-        addLog(`🎯 Confidence: ${result.confidence}`, 'success');
-        if (result.extracted_text) {
-          addLog(`📝 Extracted: "${result.extracted_text}"`, 'success');
-        }
-        addLog(`🔧 Method: ${result.detection_method}`, 'info');
-
-        // Check stored records
-        try {
-          addLog('🔍 Checking database for matching records...', 'info');
-          const records = await window.storage.list('wm:', false);
-          let verified = false;
-          
-          if (records && records.keys) {
-            for (const key of records.keys) {
-              const stored = await window.storage.get(key, false);
-              if (stored) {
-                const record = JSON.parse(stored.value);
-                if (result.extracted_text && record.watermark === result.extracted_text) {
-                  verified = true;
-                  addLog('✅ Watermark verified in database!', 'success');
-                  result.verificationRecord = record;
-                  break;
-                }
-              }
-            }
-          }
-          
-          if (!verified) {
-            addLog('ℹ️ No matching record found in database', 'info');
-          }
-        } catch (err) {
-          addLog('⚠️ Database check failed: ' + err.message, 'warning');
-        }
-      } else {
-        addLog('❌ No watermark detected', 'warning');
-      }
+      const result = await response.json();
 
       setDetectionResult(result);
+      console.log(result)
+
+      if (result.success) {
+        addLog('✅ AI watermarking verification completed!', 'success');
+      }
 
     } catch (err) {
       addLog('❌ Error: ' + err.message, 'error');
@@ -255,7 +175,7 @@ Be thorough in your analysis. If you find patterns that suggest a watermark, des
         <div className="bg-slate-800/50 backdrop-blur-xl rounded-2xl shadow-2xl p-8 mb-6 border border-slate-500/20">
           <div className="flex gap-4 mb-8">
             <button
-              onClick={() => setMode('embed')}
+              onClick={() => {setMode('embed'); setAiLog([]); setImage(null)}}
               className={`flex-1 py-3 px-6 rounded-lg font-semibold transition-all ${
                 mode === 'embed'
                  ? 'bg-white text-black'
@@ -266,7 +186,7 @@ Be thorough in your analysis. If you find patterns that suggest a watermark, des
               AI Embed
             </button>
             <button
-              onClick={() => setMode('detect')}
+              onClick={() => {setMode('detect'); setAiLog([]); setImage(null)}}
               className={`flex-1 py-3 px-6 rounded-lg font-semibold transition-all ${
                 mode === 'detect'
                   ? 'bg-white text-black  scale-105'
@@ -274,7 +194,7 @@ Be thorough in your analysis. If you find patterns that suggest a watermark, des
               }`}
             >
               <Eye className="inline-block w-5 h-5 mr-2" />
-              AI Detect
+              AI Verify
             </button>
           </div>
 
@@ -324,7 +244,7 @@ Be thorough in your analysis. If you find patterns that suggest a watermark, des
                   <Brain className="w-5 h-5 text-slate-400 mt-0.5" />
                   <div className="text-sm text-slate-200">
                     <p className="font-semibold mb-1">AI-Powered Embedding</p>
-                    <p className="text-slate-300/80">Claude will analyze your image and embed the watermark using optimal techniques (LSB, DCT, or hybrid approach).</p>
+                    <p className="text-slate-300/80">Our Local LM Server AI model will analyze your image and embed the watermark using optimal techniques (LSB, DCT, or hybrid approach).</p>
                   </div>
                 </div>
               </div>
@@ -351,12 +271,26 @@ Be thorough in your analysis. If you find patterns that suggest a watermark, des
 
           {mode === 'detect' && (
             <>
-              <div className="p-4 bg-blue-500/10 border border-blue-500/30 rounded-lg mb-4">
+              <div>
+                <label className="text-sm font-medium text-slate-200 mb-2 flex items-center gap-2">
+                  <Sparkles className="w-4 h-4 text-slate-400" />
+                  Watermark Text
+                </label>
+                <input
+                  type="text"
+                  value={watermarkText}
+                  onChange={(e) => setWatermarkText(e.target.value)}
+                  placeholder="Enter text to verify against hidden watermark"
+                  className="w-full px-4 py-3 bg-slate-700/50 border border-slate-500/30 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-transparent text-white placeholder-slate-300/50"
+                />
+              </div>
+            
+              <div className="p-4 mt-4 bg-blue-500/10 border border-blue-500/30 rounded-lg mb-4">
                 <div className="flex items-start gap-3">
                   <Eye className="w-5 h-5 text-blue-400 mt-0.5" />
                   <div className="text-sm text-blue-200">
-                    <p className="font-semibold mb-1">AI-Powered Detection</p>
-                    <p className="text-blue-300/80">Claude will analyze the image using advanced pattern recognition to detect and extract hidden watermarks.</p>
+                    <p className="font-semibold mb-1">AI-Powered Detection/Verification</p>
+                    <p className="text-blue-300/80">Our Local LM Server Model will analyze the image using advanced pattern recognition to detect and extract hidden watermarks.</p>
                   </div>
                 </div>
               </div>
@@ -412,75 +346,31 @@ Be thorough in your analysis. If you find patterns that suggest a watermark, des
             </div>
           )}
 
-          {detectionResult && mode === 'detect' && !detectionResult.embedded && (
+          {detectionResult && mode === 'detect' && (
             <div className="bg-slate-800/50 backdrop-blur-xl rounded-xl shadow-lg p-6 border border-slate-500/20">
-              <h3 className="text-lg font-semibold text-slate-200 mb-4">Detection Results</h3>
+              <h3 className="text-lg font-semibold text-slate-200 mb-4">Verification Result</h3>
               
-              {detectionResult.watermark_detected ? (
+              {detectionResult.verified ? (
                 <div className="space-y-4">
                   <div className="p-4 bg-linear-to-r from-blue-500/10 to-indigo-500/10 rounded-lg border border-blue-500/30">
                     <div className="flex items-start gap-3">
                       <CheckCircle className="w-6 h-6 text-blue-400 mt-0.5" />
                       <div className="flex-1">
-                        <p className="font-semibold text-blue-300 text-lg mb-2">Watermark Detected!</p>
-                        {detectionResult.extracted_text && (
+                        <p className="font-semibold text-blue-300 text-lg mb-2">Image Verified!</p>
                           <div className="bg-slate-900/50 p-3 rounded border border-blue-500/30 mb-3">
-                            <p className="text-sm text-blue-300 mb-1">Extracted Text:</p>
-                            <p className="font-mono text-lg text-white break-all">{detectionResult.extracted_text}</p>
+                            <p className="font-mono text-lg text-white break-all">Embedded watermark matches</p>
                           </div>
-                        )}
-                        <div className="space-y-2">
-                          <p className="text-blue-200">
-                            <span className="text-blue-300">Confidence:</span> <span className="font-semibold">{detectionResult.confidence}</span>
-                          </p>
-                          <p className="text-blue-200">
-                            <span className="text-blue-300">Method:</span> <span className="font-semibold">{detectionResult.detection_method}</span>
-                          </p>
-                        </div>
                       </div>
                     </div>
                   </div>
 
-                  <div className="p-4 bg-slate-700/30 rounded-lg">
-                    <p className="text-sm text-slate-300 mb-2 font-semibold">AI Analysis:</p>
-                    <p className="text-white/80 text-sm">{detectionResult.analysis}</p>
-                  </div>
-
-                  {detectionResult.anomalies_found && detectionResult.anomalies_found.length > 0 && (
-                    <div className="p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
-                      <p className="text-sm text-yellow-300 mb-2 font-semibold">Anomalies Found:</p>
-                      <ul className="text-sm text-yellow-200/80 space-y-1">
-                        {detectionResult.anomalies_found.map((anomaly, idx) => (
-                          <li key={idx}>• {anomaly}</li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-
-                  {detectionResult.verificationRecord && (
-                    <div className="p-4 bg-green-500/10 border border-green-500/30 rounded-lg">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Lock className="w-4 h-4 text-green-400" />
-                        <p className="text-sm text-green-300 font-semibold">Verified in Database</p>
-                      </div>
-                      <p className="text-xs text-green-200/80">
-                        Original embed: {new Date(detectionResult.verificationRecord.timestamp).toLocaleString()}
-                      </p>
-                    </div>
-                  )}
                 </div>
               ) : (
                 <div className="p-6 bg-slate-700/30 rounded-lg border border-slate-600">
                   <div className="flex items-start gap-3">
                     <AlertCircle className="w-6 h-6 text-slate-400 mt-0.5" />
                     <div>
-                      <p className="font-semibold text-slate-300 mb-2">No Watermark Detected</p>
-                      <p className="text-sm text-slate-400">{detectionResult.analysis}</p>
-                      {detectionResult.recommendations && (
-                        <p className="text-sm text-slate-400 mt-2">
-                          <span className="font-semibold">Note:</span> {detectionResult.recommendations}
-                        </p>
-                      )}
+                      <p className="font-semibold text-slate-300 mb-2">No Watermark Detected OR Watermark text doesn't match</p>
                     </div>
                   </div>
                 </div>
@@ -507,61 +397,6 @@ Be thorough in your analysis. If you find patterns that suggest a watermark, des
               ))}
             </div>
           )}
-        </div>
-
-
-
-        <div className="mt-8 hidden bg-slate-800/50 backdrop-blur-xl rounded-xl shadow-lg p-6 border border-slate-500/20">
-          <h3 className="text-lg font-semibold text-slate-200 mb-4 flex items-center gap-2">
-            <Brain className="w-5 h-5 text-slate-400" />
-            How Full AI Implementation Works
-          </h3>
-          
-          <div className="grid md:grid-cols-2 gap-6 text-sm text-slate-200 mb-6">
-            <div className="p-4 bg-linear-to-br from-slate-500/10 to-pink-500/10 rounded-lg border border-slate-500/20">
-              <h4 className="font-semibold text-white mb-2 flex items-center gap-2">
-                <Upload className="w-4 h-4 text-slate-400" />
-                AI Embedding Process
-              </h4>
-              <ul className="space-y-2 text-slate-300/90 text-xs">
-                <li>• Claude receives your image via API</li>
-                <li>• Analyzes image properties and complexity</li>
-                <li>• Determines optimal watermarking technique</li>
-                <li>• Describes precise embedding methodology</li>
-                <li>• Generates cryptographic fingerprint</li>
-                <li>• Stores metadata for future verification</li>
-              </ul>
-            </div>
-
-            <div className="p-4 bg-linear-to-br from-blue-500/10 to-indigo-500/10 rounded-lg border border-blue-500/20">
-              <h4 className="font-semibold text-white mb-2 flex items-center gap-2">
-                <Eye className="w-4 h-4 text-blue-400" />
-                AI Detection Process
-              </h4>
-              <ul className="space-y-2 text-blue-300/90 text-xs">
-                <li>• Claude examines image for patterns</li>
-                <li>• Uses computer vision analysis</li>
-                <li>• Detects LSB and frequency anomalies</li>
-                <li>• Extracts hidden text if present</li>
-                <li>• Cross-references with database</li>
-                <li>• Provides confidence assessment</li>
-              </ul>
-            </div>
-          </div>
-
-          <div className="p-4 bg-linear-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/30 rounded-lg">
-            <div className="flex items-start gap-3">
-              <AlertCircle className="w-5 h-5 text-amber-400 mt-0.5" />
-              <div className="text-sm">
-                <p className="font-semibold text-amber-300 mb-2">Important Note</p>
-                <p className="text-amber-200/80">
-                  This implementation uses Claude's vision and reasoning capabilities to analyze and describe watermarking operations. 
-                  While Claude cannot directly modify image bytes, it provides detailed technical analysis of how watermarks would be embedded and detected.
-                  For production use with actual byte-level modifications, combine this with image processing libraries.
-                </p>
-              </div>
-            </div>
-          </div>
         </div>
 
       </div>
