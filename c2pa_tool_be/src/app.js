@@ -11,12 +11,25 @@ import fs from "fs/promises";
 import fsSync from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
+import cors from "cors";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
+
+
 const PORT = process.env.PORT || 3000;
+
+
+app.use(cors({
+  origin: [
+    "http://localhost:5173",
+    "https://sentry-mark.vercel.app"
+  ],          // allow all origins
+  methods: "GET,POST",  // allowed HTTP methods
+  allowedHeaders: "*",  // allow any headers (important for file uploads)
+}));
 
 // -------------------------------------------------------------
 //  Writable Temp Directory (IMPORTANT FOR SERVERLESS)

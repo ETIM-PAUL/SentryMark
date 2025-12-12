@@ -13,21 +13,6 @@ export default defineConfig({
   },
   server: {
     proxy: {
-      '/api/sign': {
-        target: 'https://sentrymark-c2pa.onrender.com',
-        changeOrigin: true,
-        secure: true,
-      },
-      '/api/validate': {
-        target: 'https://sentrymark-c2pa.onrender.com',
-        changeOrigin: true,
-        secure: true,
-      },
-      '/api/health': {
-        target: 'https://sentrymark-c2pa.onrender.com',
-        changeOrigin: true,
-        secure: true,
-      },
       "/yakoa": {
         target: "https://docs-demo.ip-api-sandbox.yakoa.io",
         changeOrigin: true,

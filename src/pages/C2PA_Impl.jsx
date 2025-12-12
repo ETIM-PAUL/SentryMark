@@ -77,7 +77,7 @@ const C2PA_Impl = () => {
         formData.append('title', title);
         formData.append('creator', creator);
 
-        const response = await fetch('/api/sign', {
+        const response = await fetch('https://sentrymark.onrender.com/api/sign', {
           method: 'POST',
           body: formData,
         });
@@ -186,7 +186,7 @@ const C2PA_Impl = () => {
           const formData = new FormData();
           formData.append('file', detectFile);
 
-          response = await fetch('/api/validate', {
+          response = await fetch('https://sentrymark.onrender.com/api/validate', {
             method: 'POST',
             body: formData,
           });
