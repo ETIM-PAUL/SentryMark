@@ -387,6 +387,7 @@ stateDiagram-v2
     InProgress --> Resolved: Set Judgement (Approve)
     InProgress --> Resolved: Set Judgement (Reject)
     Pending --> Cancelled: Cancel by Initiator
+    Pending --> Counter: Counter Dispute with Evidence
     InProgress --> Cancelled: Cancel by Arbitrator
     Resolved --> [*]
     Rejected --> [*]
@@ -440,6 +441,11 @@ stateDiagram-v2
    - Irreversible action
    - Refunds dispute fees (if applicable)
 
+3. **Counter Dispute**
+   - Input: Target IP ID, Evidence, 
+   - Allows dispute withdrawal
+   - Irreversible action
+
 **Dispute Information Display**
 - Dispute ID and status badge
 - Target IP asset address
@@ -465,6 +471,7 @@ stateDiagram-v2
 DisputeModule.sol
 ├── raiseDispute(targetIpId, evidenceHash, tag, data)
 ├── resolveDispute(disputeId, data)
+├── assertDispute(targetIpId, evidenceHash)
 └── cancelDispute(disputeId, data)
 ```
 
