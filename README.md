@@ -4,7 +4,8 @@
 
 **A Comprehensive Application for Intellectual Property Asset Management, Tracking, and Enforcement**
 
-📊 **[View Pitch Deck](https://sentrymark-9382b5a.gamma.site/)**
+📊 **[View Pitch Deck](www.canva.com/design/DAG7P8QCRWw/e74Yax_byWivJS7XHngOEg/view?utm_content=DAG7P8QCRWw&utm_campaign=designshare&utm_medium=link2&utm_source=uniquelinks&utlId=h7388e95827
+2)**
 
 
 ## Table of Contents
