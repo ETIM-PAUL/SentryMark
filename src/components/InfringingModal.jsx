@@ -9,11 +9,11 @@ export const InfringingModal = ({ infringeResult }) => {
         <CrosshairIcon className="text-slate-400" size={24} />
         <h3 className="text-xl font-bold text-slate-200">Infringements</h3>
         <span className="ml-auto bg-slate-500/20 text-slate-300 px-3 py-1 rounded-full text-sm font-medium">
-          {infringeResult.length} Total
+          {infringeResult?.length ?? 0} Total
         </span>
       </div>
 
-      {infringeResult.length > 0 ?
+      {infringeResult?.length > 0 ?
       <div className="overflow-x-auto">
         <table className="w-full">
           <thead className='w-full'>

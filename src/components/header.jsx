@@ -15,7 +15,8 @@ const Header = () => {
 
   return (
       <div className="bg-gray-500">
-        <div className="max-w-7xl mx-auto px-4">
+        <div className="max-w-7xl mx-auto flex justify-between items-center px-4">
+          <img className='text-red-500 w-16 object-cover' src='/SentryMark.png'/>
           <div className="flex overflow-x-auto justify-center">
             {tabs.map((tab) => {
               const Icon = tab.icon;

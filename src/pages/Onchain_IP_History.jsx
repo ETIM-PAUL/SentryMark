@@ -11,6 +11,7 @@ import { TrackingModal } from '../components/TrackingModal';
 import axios from 'axios';
 import { analyzeVideoWithGoogleLens } from '../utils';
 import { InfringingModal } from '../components/InfringingModal';
+import { formatUnits } from 'ethers';
 
 const Onchain_IP_History = () => {
   const [assetId, setAssetId] = useState('');
@@ -163,7 +164,6 @@ const Onchain_IP_History = () => {
 
         {/* Asset Data Display */}
         {!isLoading && assetData && (
-          console.log("assetData", assetData),
           <div className="space-y-6 animate-fadeIn">
             {/* Media Display and Relationship Stats Row */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -286,7 +286,7 @@ const MediaDisplay = ({ nftMetadata, mediaLoading, setMediaLoading, handleCheck 
       if (url) {
         return {
           url: url,
-          type: "image"
+          type: nftMetadata.image?.contentType === "" ? "image" : nftMetadata.image?.contentType 
         };
       }
     }
@@ -839,7 +839,7 @@ const TipsTable = ({ tips, currentPage, setCurrentPage, paginatedTips, totalPage
                 </div>
               </td>
               <td className="py-4 px-2">
-                <span className="text-slate-400 font-bold">{tip.amountAfterFee} {getTokenMetadata(tip.receiverIpId)?.symbol}</span>
+                <span className="text-slate-400 font-bold">{formatUnits(tip.amountAfterFee, 18)} {getTokenMetadata(tip.token)?.symbol ?? "WIP"}</span>
               </td>
               {/* <td className="py-4 px-2 text-slate-300">{tip.date}</td>
               <td className="py-4 px-2">

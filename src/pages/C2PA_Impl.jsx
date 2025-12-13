@@ -223,6 +223,8 @@ const C2PA_Impl = () => {
           
           // If blob type is empty, try to infer from URL or default to image
           let mimeType = fileBlob.type;
+          console.log('File mimeType:', mimeType);
+
           if (!mimeType || mimeType === 'application/octet-stream') {
             const urlLower = fetchUrl.toLowerCase();
             if (urlLower.includes('.jpg') || urlLower.includes('.jpeg')) {
@@ -243,6 +245,9 @@ const C2PA_Impl = () => {
           const urlPath = new URL(fetchUrl).pathname;
           let fileName = urlPath.split('/').pop() || 'downloaded_file';
           
+          console.log('urlPath:', urlPath);
+          console.log('File name:', fileName);
+
           // Add extension if not present
           if (!fileName.includes('.')) {
             if (mimeType.includes('jpeg')) fileName += '.jpg';
@@ -263,7 +268,7 @@ const C2PA_Impl = () => {
           const formData = new FormData();
           formData.append('file', file);
 
-          response = await fetch('/api/validate', {
+          response = await fetch('https://sentrymark.onrender.com/api/validate', {
             method: 'POST',
             body: formData,
           });
@@ -287,7 +292,7 @@ const C2PA_Impl = () => {
             // If parsing fails, use generic message
           }
           
-          throw new Error('This asset does not contain C2PA provenance data');
+          throw new Error('Could not read C2PA Manifest. Please try again later.');
         }
 
         const data = await response.json();

@@ -33,7 +33,7 @@ export const RaiseDisputeModal = ({ show, onClose, form, setForm, isSubmitting, 
           </select>
         </div>
         <div>
-          <label className="block text-slate-300 font-medium ">Bond (Optional)</label>
+          <label className="block text-slate-300 font-medium ">Bond</label>
           <span className='text-red-500 text-xs'>The amount of wrapper IP that the dispute initiator pays upfront into a pool. To counter that dispute the opposite party of the dispute has to place a bond of the same amount. The winner of the dispute gets the original bond back + 50% of the other party bond. The remaining 50% of the loser party bond goes to the reviewer.</span>
           <input
             type="text"

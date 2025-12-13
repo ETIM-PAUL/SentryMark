@@ -64,7 +64,7 @@ try {
     loadTrustConfig({
       verifyTrustList: false,
       trustAnchors: [caCert],
-      allowedList: [],
+      allowedList: "",
     });
 
     console.log("✅ C2PA trust config loaded");
