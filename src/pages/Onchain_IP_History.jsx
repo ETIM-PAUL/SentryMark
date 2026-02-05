@@ -12,6 +12,7 @@ import axios from 'axios';
 import { analyzeVideoWithGoogleLens } from '../utils';
 import { InfringingModal } from '../components/InfringingModal';
 import { formatUnits } from 'ethers';
+import { useRoyaltyPaidEvents } from '../hooks/useRoyaltyPaidEvents';
 
 const Onchain_IP_History = () => {
   const [assetId, setAssetId] = useState('');
@@ -25,6 +26,7 @@ const Onchain_IP_History = () => {
   const [trackedAssetsLoading, setTrackedAssetsLoading] = useState(false);
   const [showTrackingModal, setShowTrackingModal] = useState(false);
   const itemsPerPage = 5;
+  const { fetchRoyaltyPaidEvents: fetchIPTips } = useRoyaltyPaidEvents();
 
   const handleFetchAsset = async () => {
     if (!assetId.trim()) {
