@@ -1,5 +1,5 @@
 import { createPublicClient, createWalletClient, custom, erc20Abi, getContract, http } from "viem";
-import { storyAeneid } from "viem/chains";
+import { storyAeneid, story } from "viem/chains";
 import { ethers } from "ethers";
 import { StoryClient } from '@story-protocol/core-sdk'
 import { mockErc20_abi } from "../abi/mockErc20_abi";
@@ -10,7 +10,7 @@ export function secondsFromNow(timestamp) {
 
 export const DisputeContract = "0x9b7A9c70AFF961C799110954fc06F3093aeb94C5"
 
-export const RPC_URL = "https://rpc.ankr.com/story_aeneid_testnet"
+export const RPC_URL = import.meta.env.VITE_STORY_RPC_URL;
 
 export const formatDate = (timestamp) => {
   // Handle different input formats
@@ -96,14 +96,14 @@ export async function createStoryClientWithWallet() {
 
   const walletClient = createWalletClient({
       transport,
-      chain: storyAeneid
+      chain: story
   })
 
   const [address] = await walletClient.requestAddresses()
 
   const storyClient = StoryClient.newClient({
       account: address,
-      chainId: storyAeneid.id,
+      chainId: story.id,
       transport
   })
 
@@ -111,7 +111,7 @@ export async function createStoryClientWithWallet() {
 }
 
 const client = createPublicClient({
-  chain: storyAeneid,
+  chain: story,
   transport: http(RPC_URL)
 });
 

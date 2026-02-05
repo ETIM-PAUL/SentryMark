@@ -24,7 +24,7 @@ export async function fetchIPTips(receiverIpId) {
 }
 
 export async function fetchDisputeDetails(disputeId, targetIpId) {
-  const url = "https://staging-api.storyprotocol.net/api/v4/disputes";
+  const url = import.meta.env.VITE_STORY_API_URL + '/disputes';
 
   // Build dynamic `where` filter
   const where = {};

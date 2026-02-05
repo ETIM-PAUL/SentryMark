@@ -3,13 +3,12 @@ import React, { useEffect, useState, useRef } from 'react';
 import Header from '../components/header';
 import toast, { Toaster } from 'react-hot-toast';
 import { SkeletonCard, SkeletonLine } from '../components/SkeletonLoader';
-import { BrowserProvider, ethers, parseEther } from "ethers";
+import { ethers, parseEther } from "ethers";
 import { disputeABI } from '../abi/dispute_abi';
 import { createStoryClientWithWallet, DisputeContract, formatDate, isDisputed, RPC_URL, secondsFromNow, uploadFileToIPFS, uploadTextToIPFS } from '../utils';
 import { ConnectKitButton, ConnectKitProvider } from 'connectkit';
-import { http, useAccount } from 'wagmi';
+import { useAccount } from 'wagmi';
 import { DisputeTargetTag, StoryClient } from '@story-protocol/core-sdk'
-import { storyAeneid } from 'viem/chains';
 import { fetchDisputeDetails } from '../queries';
 import { RaiseDisputeModal } from '../components/RaiseDisputeModal';
 import { ResolveDisputeModal } from '../components/ResolveDisputeModal';

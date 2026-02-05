@@ -260,19 +260,16 @@ const MediaDisplay = ({ nftMetadata, mediaLoading, setMediaLoading, handleCheck 
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [showMenu]);
 
-  // Extract media info from nftMetadata
+  // Extract media info from nftMetadata - Pure function (no side effects)
   const getMediaInfo = () => {
     console.log("nft", nftMetadata);
-    if (!nftMetadata) 
-    {
-      setMediaLoading(false);
+    if (!nftMetadata) {
       return { url: null, type: null };
     }
 
     // Priority 1: Check animation field (for video/audio) - prefer cachedUrl over originalUrl
     if (nftMetadata.animation?.contentType) {
       const url = nftMetadata.animation.cachedUrl || nftMetadata.animation.originalUrl;
-      setMediaLoading(false);
       if (url) {
         return {
           url: url,
@@ -284,7 +281,6 @@ const MediaDisplay = ({ nftMetadata, mediaLoading, setMediaLoading, handleCheck 
     // Priority 2: Check image field (for images) - prefer cachedUrl over originalUrl
     if (nftMetadata.image?.contentType || nftMetadata.image.originalUrl) {
       const url = nftMetadata.image.cachedUrl || nftMetadata.image.originalUrl;
-      setMediaLoading(false);
       if (url) {
         return {
           url: url,
@@ -295,7 +291,6 @@ const MediaDisplay = ({ nftMetadata, mediaLoading, setMediaLoading, handleCheck 
 
     // Priority 3: Fallback to raw.metadata.mediaUrl (video/audio fallback)
     if (nftMetadata.raw?.metadata?.mediaUrl && nftMetadata.raw?.metadata?.mediaType) {
-      setMediaLoading(false);
       return {
         url: nftMetadata.raw.metadata.mediaUrl,
         type: nftMetadata.raw.metadata.mediaType
@@ -308,7 +303,6 @@ const MediaDisplay = ({ nftMetadata, mediaLoading, setMediaLoading, handleCheck 
       const url = nftMetadata.raw.metadata.animation_url.startsWith('ipfs://')
         ? nftMetadata.raw.metadata.animation_url.replace('ipfs://', 'https://ipfs.io/ipfs/')
         : nftMetadata.raw.metadata.animation_url;
-      setMediaLoading(false);
 
       return {
         url: url,
@@ -322,7 +316,6 @@ const MediaDisplay = ({ nftMetadata, mediaLoading, setMediaLoading, handleCheck 
       const url = nftMetadata.raw.metadata.image.startsWith('ipfs://')
         ? nftMetadata.raw.metadata.image.replace('ipfs://', 'https://ipfs.io/ipfs/')
         : nftMetadata.raw.metadata.image;
-      setMediaLoading(false);
 
       return {
         url: url,
@@ -331,11 +324,17 @@ const MediaDisplay = ({ nftMetadata, mediaLoading, setMediaLoading, handleCheck 
     }
 
     // No media available
-    setMediaLoading(false);
     return { url: null, type: null };
   };
 
   const { url: originalURL, type: contentType } = getMediaInfo();
+
+  // Handle media loading state - set to false if no URL, otherwise let media load callbacks handle it
+  React.useEffect(() => {
+    if (!originalURL) {
+      setMediaLoading(false);
+    }
+  }, [originalURL]);
 
 
   const renderMedia = () => {

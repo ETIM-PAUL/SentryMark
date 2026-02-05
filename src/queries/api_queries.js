@@ -2,7 +2,7 @@ import axios from "axios";
 
 export async function fetchAPIdata(ipId) {  
 
-const url = 'https://staging-api.storyprotocol.net/api/v4/assets';
+const url = import.meta.env.VITE_STORY_API_URL + '/assets';
 const options = {
   method: 'POST',
   headers: {

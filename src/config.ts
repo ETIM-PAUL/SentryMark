@@ -1,12 +1,12 @@
 import { createConfig, http } from 'wagmi'
-import { storyAeneid } from 'wagmi/chains'
+import { story } from 'wagmi/chains'
 import { ConnectKitProvider, getDefaultConfig } from "connectkit";
 
 export const config = createConfig(
     getDefaultConfig({
-        chains: [storyAeneid],
+        chains: [story],
         transports: {
-          [storyAeneid.id]: http(),
+          [story.id]: http(),
         },
   
       // Required API Keys
