@@ -21,7 +21,7 @@ interface CacheEntry {
 }
 
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
-const CHUNK_SIZE = 2000; // Adjust based on RPC provider limits
+const CHUNK_SIZE = 10000; // Adjust based on RPC provider limits
 const CACHE_KEY = 'royalty-events-cache';
 const RPC_URL = 'https://aeneid.storyrpc.io'
 const ROYALTY_MODULE_ADDRESS = '0xD2f60c40fEbccf6311f8B47c4f2Ec6b040400086'

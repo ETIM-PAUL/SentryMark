@@ -14,6 +14,11 @@ TM_SCHEMA_CODE=TrustMark.Encoding.BCH_4
 tm = TrustMark(verbose=True, model_type='Q', encoding_type=TM_SCHEMA_CODE)
 bitlen = tm.schemaCapacity()
 
+
+class AlreadyWatermarkedError(Exception):
+    """Raised when attempting to embed a watermark into an image that already has one."""
+    pass
+
 def string_to_binary(watermark_id: str, bitlen: int) -> str:
     """
     Convert an alphanumeric string to a binary string of the specified length.
@@ -51,6 +56,66 @@ def string_to_binary(watermark_id: str, bitlen: int) -> str:
     # Truncate to the required length
     return binary_str[:bitlen]
 
+def embed_watermark(base64_image: str, wm_hash: str):
+    """
+    Embed a TrustMark watermark into a base64-encoded image.
+
+    Args:
+        base64_image: Base64-encoded image string.
+        wm_hash: Arbitrary identifier/hash (text) that will be deterministically
+                 converted into a binary watermark payload.
+
+    Returns:
+        Base64-encoded image string with embedded watermark, or None on failure.
+    """
+    decoded_image_bytes = base64.b64decode(base64_image)
+    print(f"Decoded image bytes: {len(decoded_image_bytes)}")
+    image_stream = io.BytesIO(decoded_image_bytes)
+    try:
+        cover = Image.open(image_stream)
+        print(f"Image information: {cover.format}, {cover.size}, {cover.mode}")
+
+        # Check if there is *any* existing watermark in the image, regardless of ID.
+        stego = cover.convert("RGB")
+        try:
+            wm_id, wm_present, wm_schema = tm.decode(stego, "binary")
+        except Exception as decode_err:
+            logging.warning("Error while checking for existing watermark: %s", decode_err)
+            wm_present = False
+
+        if wm_present:
+            logging.info("Existing watermark detected; refusing to embed again.")
+            raise AlreadyWatermarkedError("Image has already been watermarked")
+
+        rgb = cover.convert("RGB")
+
+        # Convert the provided hash/text into the binary payload TrustMark expects
+        watermark_id = string_to_binary(wm_hash, bitlen)
+
+        encoded = tm.encode(rgb, watermark_id, MODE="binary")
+        params = {
+            "exif": cover.info.get("exif"),
+            "icc_profile": cover.info.get("icc_profile"),
+            "dpi": cover.info.get("dpi"),
+        }
+        not_none_params = {k: v for k, v in params.items() if v is not None}
+        output_stream = io.BytesIO()
+        # Determine format from original image or default to JPG
+        image_format = cover.format or "JPG"
+        encoded.save(output_stream, format=image_format, **not_none_params)
+        base64_encoded_image = base64.b64encode(output_stream.getvalue()).decode(
+            "utf-8"
+        )
+        print(f"Base64 encoded image: {len(base64_encoded_image)}")
+        return base64_encoded_image
+    except AlreadyWatermarkedError:
+        # Re-raise explicitly so API layer can return a specific error.
+        raise
+    except Exception as e:
+        print(f"Error opening image: {e}")
+        return None
+    finally:
+        image_stream.close()
 
 def verify_watermark(wm_base64_img_str: str, wm_hash: str):
   if wm_base64_img_str is None:

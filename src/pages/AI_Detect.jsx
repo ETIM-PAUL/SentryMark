@@ -57,13 +57,11 @@ export default function AIWatermarkAndDetect() {
     // setLoading(true);
     setAiLog([]);
     setWatermarkedImage(null);
-    addLog('🚀 Initializing AI watermarking system...', 'info');
+    addLog('🚀 Initializing watermarking system...', 'info');
     
     try {
       addLog('📸 Converting image to base64...', 'info');
       const base64Image = await convertImageToBase64(imageFile);
-
-      
 
       const response = await fetch("http://localhost:8000/watermark-image", {
         method: "POST",
@@ -78,15 +76,15 @@ export default function AIWatermarkAndDetect() {
 
       const result = await response.json();
 
-      console.log("res",result.result)
+      console.log("res",result)
 
-      if (result.result.success) {
-        addLog('✅ AI watermarking analysis complete!', 'success');
+      if (result.success) {
+        addLog('✅ Watermarking analysis complete!', 'success');
         
-        setWatermarkedImage(result.result.watermarked_image);
+        setWatermarkedImage(result.embedded_image);
       } else {
-        addLog('❌ Error: ' + result.result.error, 'error');
-        console.error('Watermarking error:', result.result.error);
+        addLog('❌ Error: ' + result.detail, 'error');
+        console.error('Watermarking error:', result.error);
       }
     } catch (err) {
       addLog('❌ Error: ' + err.message, 'error');
@@ -104,14 +102,14 @@ export default function AIWatermarkAndDetect() {
 
     setLoading(true);
     setAiLog([]);
-    addLog('🔍 Starting AI-powered watermark detection...', 'info');
+    addLog('🔍 Starting watermark detection...', 'info');
 
     try {
       addLog('📸 Converting image to base64...', 'info');
       const base64Image = await convertImageToBase64(imageFile);
       
       addLog('🤖 Sending to LLM Server for watermark detection...', 'info');
-      addLog('🔎 AI is analyzing image for hidden watermarks...', 'info');
+      addLog('🔎 Analyzing image for hidden watermarks...', 'info');
 
       const response = await fetch("http://localhost:8000/verify-watermark", {
         method: "POST",
@@ -130,7 +128,7 @@ export default function AIWatermarkAndDetect() {
       console.log(result)
 
       if (result.success) {
-        addLog('✅ AI watermarking verification completed!', 'success');
+        addLog('✅ Watermarking verification completed!', 'success');
       }
 
     } catch (err) {
@@ -170,7 +168,15 @@ export default function AIWatermarkAndDetect() {
         <div className="bg-slate-800/50 backdrop-blur-xl rounded-2xl shadow-2xl p-8 mb-6 border border-slate-500/20">
           <div className="flex gap-4 mb-8">
             <button
-              onClick={() => {setMode('embed'); setAiLog([]); setImage(null)}}
+              onClick={() => {
+                setMode('embed');
+                setAiLog([]);
+                setWatermarkedImage(null);
+                setDetectionResult(null);
+                if (fileInputRef.current) {
+                  fileInputRef.current.value = '';
+                }
+              }}
               className={`flex-1 py-3 px-6 rounded-lg font-semibold transition-all ${
                 mode === 'embed'
                  ? 'bg-white text-black'
@@ -181,7 +187,15 @@ export default function AIWatermarkAndDetect() {
               AI Embed
             </button>
             <button
-              onClick={() => {setMode('detect'); setAiLog([]); setImage(null)}}
+              onClick={() => {
+                setMode('detect');
+                setAiLog([]);
+                setWatermarkedImage(null);
+                setDetectionResult(null);
+                if (fileInputRef.current) {
+                  fileInputRef.current.value = '';
+                }
+              }}
               className={`flex-1 py-3 px-6 rounded-lg font-semibold transition-all ${
                 mode === 'detect'
                   ? 'bg-white text-black  scale-105'
@@ -239,7 +253,7 @@ export default function AIWatermarkAndDetect() {
                   <Brain className="w-5 h-5 text-slate-400 mt-0.5" />
                   <div className="text-sm text-slate-200">
                     <p className="font-semibold mb-1">AI-Powered Embedding</p>
-                    <p className="text-slate-300/80">Our Local LM Server AI model will analyze your image and embed the watermark using optimal techniques (LSB, DCT, or hybrid approach).</p>
+                    <p className="text-slate-300/80">Our AI model will analyze your image and embed the watermark using optimal techniques (LSB, DCT, or hybrid approach).</p>
                   </div>
                 </div>
               </div>
