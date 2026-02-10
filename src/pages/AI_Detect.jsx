@@ -63,7 +63,7 @@ export default function AIWatermarkAndDetect() {
       addLog('📸 Converting image to base64...', 'info');
       const base64Image = await convertImageToBase64(imageFile);
 
-      const response = await fetch("http://localhost:8000/watermark-image", {
+      const response = await fetch("https://sentrymark-hqsc.onrender.com/watermark-image", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -111,7 +111,7 @@ export default function AIWatermarkAndDetect() {
       addLog('🤖 Sending to LLM Server for watermark detection...', 'info');
       addLog('🔎 Analyzing image for hidden watermarks...', 'info');
 
-      const response = await fetch("http://localhost:8000/verify-watermark", {
+      const response = await fetch("https://sentrymark-hqsc.onrender.com/verify-watermark", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
