@@ -109,7 +109,7 @@ export default function AIWatermarkAndDetect() {
       const base64Image = await convertImageToBase64(imageFile);
       
       addLog('🤖 Sending to LLM Server for watermark detection...', 'info');
-      addLog('🔎 Analyzing image for hidden watermarks...', 'info');
+      addLog('🔎 Analyzing image for hidden watermarks....', 'info');
 
       const response = await fetch("https://sentrymark-hqsc.onrender.com/verify-watermark", {
         method: "POST",
